@@ -147,7 +147,7 @@ def training(n_iter, data, print_acc=True, print_loss=True, mini_batch_size=1):
 # convolution operation with randomnly initialized filters
 def convolute(image, number_filters):
     
-    filter_matrix = np.random.randn(number_filters, 3, 3)    
+    filter_matrix = np.random.randn(number_filters, 3, 3) / 9
     width, height = image.shape
     feature_map = np.zeros(shape=(number_filters, width - 3 + 1, height - 3 + 1))
 
@@ -164,7 +164,6 @@ def max_pool(feature_map):
     number_filters, width, height = feature_map.shape
 #    print(feature_map.shape)
     pooling_map = np.zeros(shape=(number_filters, width // 2, height // 2))
-    print(pooling_map.shape)
     for k in range(number_filters):
        for i in range(int(width / 2)):
             for j in range(int(height / 2)):
@@ -173,3 +172,19 @@ def max_pool(feature_map):
                 
     return pooling_map
 
+
+
+# softmax
+
+def softmax(output_maxpool, n_classes):
+
+    num_filter, height, width = output_maxpool.shape
+    input_len = num_filter * height * width
+    output_maxpool = np.reshape(output_maxpool, 
+                                newshape=(input_len))
+    weight_matrix = np.random.randn(input_len, n_classes) / input_len
+    exponentials = np.exp( - output_maxpool.dot(weight_matrix))
+    sum_exponentials = np.sum(exponentials)
+    probabilities = exponentials / sum_exponentials
+    
+    return probabilities    

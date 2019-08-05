@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug  5 15:26:32 2019
+#Created on Mon Aug  5 15:26:32 2019
 
 @author: d2gu53
 """
@@ -17,15 +17,18 @@ Created on Mon Aug  5 15:26:32 2019
 # convolution helps us look for specific localized image features 
 import numpy as np
 import sys
-from pathlib import Path
-import functions as fun
+#from pathlib import Path
 import mnist
 
-cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
+path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+sys.path.append(path)
+import functions as fun
 
-if not cats_and_dogs_folder.is_file():
-    raise AssertionError(f"Wrong folder: {cats_and_dogs_folder}")
-sys.path.append(cats_and_dogs_folder)
+#cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
+
+#if not cats_and_dogs_folder.is_file():
+#    raise AssertionError(f"Wrong folder: {cats_and_dogs_folder}")
+#sys.path.append(cats_and_dogs_folder)
 
 
 # generate some data
@@ -53,44 +56,66 @@ for i in range(1000):
 
 data = [sample_horizontal, sample_vertical]
 
-# convolution operation with randomnly initialized filters
-def convolute(image, number_filters):
-    
-    filter_matrix = np.random.randn(number_filters, 3, 3)    
-    width, height = image.shape
-    feature_map = np.zeros(shape=(number_filters, width - 3 + 1, height - 3 + 1))
-
-    for k in range(number_filters):
-       for i in range(width - 3 + 1):
-            for j in range(height - 3 + 1):
-                res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
-                feature_map[k, i, j] = np.sum(res)
-    
-    return feature_map
-
-
-test_features = convolute(data[0][1], 5)
+test_features = fun.convolute(data[0][1], 5)
 test_features.shape
 
-def max_pool(feature_map):
-    number_filters, width, height = feature_map.shape
-#    print(feature_map.shape)
-    pooling_map = np.zeros(shape=(number_filters, width // 2, height // 2))
-    print(pooling_map.shape)
-    for k in range(number_filters):
-       for i in range(int(width / 2)):
-            for j in range(int(height / 2)):
-                print(f"k={k} i={i} j={j}")
-                res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
-                print(res)
-                print(np.max(res))
-                print(f"shape = {res.shape}")
-                pooling_map[k, i, j] = np.max(res)
-                
-    return pooling_map
 
-max_pool(test_features).shape
+fun.max_pool(test_features).shape
     
 test_features.shape
 
-max_pool(test_features)
+test_pool = fun.max_pool(test_features)
+
+
+## build fully connected layer for predition
+num_filter, height, width = test_pool.shape
+
+
+n_classes = 10
+
+weight_matrix = np.random.randn(num_filter * height * width, 10)
+
+
+
+
+test_conv = fun.convolute(data[1][12], 6)
+test_maxpool = fun.max_pool(test_conv)
+test_softmax = fun.softmax(test_maxpool, 10)
+
+test_softmax
+
+# why use softmax? To quantify how sure we are of our prediction
+# and use for example cross-entropy-loss
+
+# define forward pass through network
+
+test_images = mnist.test_images()[:1000]
+test_labels = mnist.test_labels()[:1000]
+
+def feed_forward(image, label, number_filters, n_classes):
+    
+    image = image / 255    
+    out_conv = fun.convolute(image=image, number_filters=number_filters)
+    out_maxpool = fun.max_pool(feature_map=out_conv)
+    out_softmax = fun.softmax(output_maxpool=out_maxpool, n_classes=n_classes)
+    
+    # compute cross entropy loss. Normaly cross entropy involves summing
+    # over all classes and predictions but since the true probability is 
+    # either 1 or 0 and 1 only once for every image, we dont need to sum
+    # over all classes
+    
+    loss = -np.log(out_softmax[label])
+    acc = 1 if np.max(out_softmax == label) else 0
+    
+    return out_softmax, loss, acc, label
+
+
+for i in range(100):
+    probabilities, loss, acc, label = feed_forward(test_images[i], test_labels[i], 
+                                 number_filters=6, n_classes=10)
+    print(loss, acc, label)
+
+
+
+
+
