@@ -232,8 +232,10 @@ def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.0
     #print(dL_dwL.shape)
     #print(dL_dwL.shape)
    # dL_dwL = (dwL).dot(delta_L) # shape doesn't work out
-    dL_dwL[:, label] = dwL.dot(delta_L)
-    print(dL_dwL)
+    dL_dwL[:, label] = dwL.dot(delta_L) 
+    # dL_dwL[:, label] = 10
+    
+    #print(dL_dwL)
     # updating weights
     weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL
     bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
@@ -267,7 +269,7 @@ def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_r
     #intermediates = {"dLoss_daL": dLoss, "dSoft_dinL": dSoft, "dLoss_dwL": dwL}
     intermediates = "bla" #
     
-    return probabilities, loss, acc, label, prediction, intermediates, weight, bias
+    return probabilities, loss, acc, label, prediction, intermediates, weights, bias
 
 
 

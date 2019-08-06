@@ -21,7 +21,7 @@ import sys
 import mnist
 import os
 path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
 import functions as fun
 
@@ -92,8 +92,8 @@ test_softmax
 
 # define forward pass through network
 
-test_images = mnist.test_images()[:1000]
-test_labels = mnist.test_labels()[:1000]
+test_images = mnist.test_images()[1000:2000]
+test_labels = mnist.test_labels()[1000:2000]
 
 import functions as fun
 
@@ -103,18 +103,20 @@ weight_matrix = np.random.randn(input_len, n_classes) / input_len
 weight_matrix_old  = weight_matrix
 bias_vector = np.random.randn(n_classes) / n_classes
 bias_vector_old = bias_vector
+#bias_vector = bias_vector_old
+
 num_correct = 0
-for i in range(101):
+for i in range(1000):
     #false = 0
-   # print(f"bias_vector at iteration {i} : {bias_vector}")
-    print(f"weight matrix at iteration {i}: {weight_matrix}")
+ #   print(f"bias_vector at iteration {i} : {bias_vector}")
+    # print(f"weight matrix at iteration {i}: {weight_matrix}")
     result = fun.feed_forward(image=test_images[i], 
                               label=test_labels[i], 
                                  number_filters=6, 
                                  n_classes=10,
                                  weight=weight_matrix ,
                                  bias=bias_vector,
-                                 learn_rate=0.001)
+                                 learn_rate=0.01)
     
     weight_matrix = result[6]
     bias_vector = result[7]
@@ -126,7 +128,8 @@ for i in range(101):
         accuracy = num_correct / i
         print(f"accuracy for the first {i} samples: {accuracy}")
         print(f"{num_correct} predictions for {i} samples were correct")
-        
+        print(f"bias_vector at iteration {i} : {bias_vector}")
+        print(f"weight matrix at iteration {i}: {weight_matrix}")
     
     #print(probabilities[label], prediction, label, acc)
 
@@ -147,3 +150,4 @@ np.prod(test_images.shape)
 
 
 
+test_images[1] / 255 -0.5
