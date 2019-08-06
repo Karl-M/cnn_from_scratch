@@ -19,10 +19,13 @@ import numpy as np
 import sys
 #from pathlib import Path
 import mnist
-
+import os
 path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
 import functions as fun
+
+os.listdir(path)
 
 #cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
 
@@ -92,30 +95,55 @@ test_softmax
 test_images = mnist.test_images()[:1000]
 test_labels = mnist.test_labels()[:1000]
 
-def feed_forward(image, label, number_filters, n_classes):
-    
-    image = image / 255    
-    out_conv = fun.convolute(image=image, number_filters=number_filters)
-    out_maxpool = fun.max_pool(feature_map=out_conv)
-    out_softmax = fun.softmax(output_maxpool=out_maxpool, n_classes=n_classes)
-    
-    # compute cross entropy loss. Normaly cross entropy involves summing
-    # over all classes and predictions but since the true probability is 
-    # either 1 or 0 and 1 only once for every image, we dont need to sum
-    # over all classes
-    
-    loss = -np.log(out_softmax[label])
-    acc = 1 if np.max(out_softmax == label) else 0
-    
-    return out_softmax, loss, acc, label
+import functions as fun
 
+n_classes = 10
+input_len = 1014
+weight_matrix = np.random.randn(input_len, n_classes) / input_len
+weight_matrix_old  = weight_matrix
+bias_vector = np.random.randn(n_classes) / n_classes
+bias_vector_old = bias_vector
+num_correct = 0
+for i in range(101):
+    #false = 0
+   # print(f"bias_vector at iteration {i} : {bias_vector}")
+    print(f"weight matrix at iteration {i}: {weight_matrix}")
+    result = fun.feed_forward(image=test_images[i], 
+                              label=test_labels[i], 
+                                 number_filters=6, 
+                                 n_classes=10,
+                                 weight=weight_matrix ,
+                                 bias=bias_vector,
+                                 learn_rate=0.001)
+    
+    weight_matrix = result[6]
+    bias_vector = result[7]
+#    print(weight_matrix)
+   # print(prediction, label, acc)
+    num_correct += result[2]
+   # print(num_correct)
+    if i % 100 == 0 and i != 0:
+        accuracy = num_correct / i
+        print(f"accuracy for the first {i} samples: {accuracy}")
+        print(f"{num_correct} predictions for {i} samples were correct")
+        
+    
+    #print(probabilities[label], prediction, label, acc)
 
-for i in range(100):
-    probabilities, loss, acc, label = feed_forward(test_images[i], test_labels[i], 
-                                 number_filters=6, n_classes=10)
-    print(loss, acc, label)
+weight_matrix
+weight_matrix_old
 
+sum(weight_matrix == weight_matrix_old)
 
+bias_vector
+bias_vector_old
+result[6]
+# 10% accuracy is equivalent to random guessing, to do better, we need to train
+# the network. Training consists of two phases. A forward pass and a backward pass.
+
+test_images[1].shape
+
+np.prod(test_images.shape)
 
 
 

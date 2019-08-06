@@ -76,7 +76,7 @@ def plot_loss(history):
 #### nn from scratch functions
     
 
-def feed_forward(model, data):
+def feed_forward_nn(model, data):
     W1, b1, W2, b2 = model["W1"], model["b1"], model["W2"], model["b2"]
     z1 = data.dot(W1) + b1
     a1 : np.ndarray = np.tanh(z1)
@@ -89,7 +89,7 @@ def feed_forward(model, data):
 
 
 
-def backprop(probs, model, intermediates, data):
+def backprop_nn(probs, model, intermediates, data):
     W1, b1, W2, b2 = model["W1"], model["b1"], model["W2"], model["b2"]
     z1 = intermediates["z1"]
     a1 = intermediates["a1"]
@@ -148,43 +148,126 @@ def training(n_iter, data, print_acc=True, print_loss=True, mini_batch_size=1):
 def convolute(image, number_filters):
     
     filter_matrix = np.random.randn(number_filters, 3, 3) / 9
-    width, height = image.shape
-    feature_map = np.zeros(shape=(number_filters, width - 3 + 1, height - 3 + 1))
+    bias_vector = np.random.randn(number_filters) / number_filters
+    height, width = image.shape
+    feature_map = np.zeros(shape=(number_filters, height - 3 + 1, width - 3 + 1))
 
     for k in range(number_filters):
-       for i in range(width - 3 + 1):
-            for j in range(height - 3 + 1):
+       for i in range(height - 3 + 1):
+            for j in range(width - 3 + 1):
                 res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
-                feature_map[k, i, j] = np.sum(res)
+                feature_map[k, i, j] = np.sum(res) + bias_vector[k]
     
-    return feature_map
+    intermediates = {"num_fil": number_filters, "height": height,
+                          "width": width}
+    return feature_map, intermediates
 
 
 def max_pool(feature_map):
-    number_filters, width, height = feature_map.shape
+    number_filters, height, width = feature_map.shape
 #    print(feature_map.shape)
-    pooling_map = np.zeros(shape=(number_filters, width // 2, height // 2))
+    pooling_map = np.zeros(shape=(number_filters, height // 2, width // 2))
     for k in range(number_filters):
-       for i in range(int(width / 2)):
-            for j in range(int(height / 2)):
+       for i in range(height // 2):
+            for j in range(width // 2):
                 res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
                 pooling_map[k, i, j] = np.max(res)
+    
+    pooling_map_shape = pooling_map.shape
                 
-    return pooling_map
+    return pooling_map, pooling_map_shape
 
 
 
 # softmax
 
-def softmax(output_maxpool, n_classes):
+def softmax(output_maxpool, n_classes, weight_matrix, bias_vector):
 
     num_filter, height, width = output_maxpool.shape
     input_len = num_filter * height * width
     output_maxpool = np.reshape(output_maxpool, 
                                 newshape=(input_len))
-    weight_matrix = np.random.randn(input_len, n_classes) / input_len
-    exponentials = np.exp( - output_maxpool.dot(weight_matrix))
+    
+    input_softmax = output_maxpool.dot(weight_matrix) + bias_vector
+    exponentials = np.exp( - input_softmax)
     sum_exponentials = np.sum(exponentials)
     probabilities = exponentials / sum_exponentials
     
-    return probabilities    
+    intermediates = {"exp": exponentials, 
+                             "sum_exp": sum_exponentials,
+                             "input_softmax": input_softmax,
+                             "weight_matrix": weight_matrix,
+                             "output_maxpool": output_maxpool,
+                             "bias_vector": bias_vector,
+                             "n_classes": n_classes
+                             }
+    return probabilities, intermediates
+
+def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.01):
+    ps = probabilities
+    # to implement backprop, we need intermediate results, 
+    # e.g. the derivative of the loss
+    
+    # derivative of loss function with respect to output last layer
+    dLoss = np.zeros(inter_soft["n_classes"]) # dL / da
+    dLoss[label] = - 1 / ps[label]
+    # derivative of softmax with respect to input 
+    # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
+    dSoft = np.zeros(inter_soft["n_classes"])
+    dSoft[label] = ((inter_soft["exp"][label] * (inter_soft["exp"][label] - inter_soft["sum_exp"])) /
+         inter_soft["sum_exp"] * inter_soft["sum_exp"])
+    # derivative of Loss with respect to bias vector in softmax
+    dbL = np.zeros(inter_soft["n_classes"])
+    dbL[label] = dSoft[label] * dLoss[label]
+    delta_L = dbL
+    dL_dbL = delta_L
+    # derivative with respect to weight matrix in softmax
+    dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
+    dwL[:, label] = inter_soft["output_maxpool"]
+    
+    # derivative of Loss function with respect to weight matrix in softmax
+    
+    dL_dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
+    # dL_dwL[label] = delta_L * 
+    #print(dL_dwL.shape)
+    #print(dL_dwL.shape)
+   # dL_dwL = (dwL).dot(delta_L) # shape doesn't work out
+    dL_dwL[:, label] = dwL.dot(delta_L)
+    print(dL_dwL)
+    # updating weights
+    weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL
+    bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
+    
+    return weight_matrix, bias_vector
+    
+def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_rate=0.01):
+    
+    image = image / 255 - 0.5
+    out_conv, inter_conv = convolute(image=image, number_filters=number_filters)
+    out_maxpool, pooling_map_shape = max_pool(feature_map=out_conv)
+    probabilities, inter_soft = softmax( output_maxpool=out_maxpool, 
+                                                   n_classes=n_classes,
+                                                   weight_matrix=weight,
+                                                   bias_vector=bias)
+    weights, bias = backprop(inter_soft=inter_soft, probabilities=probabilities,
+             label=label, pooling_map_shape=pooling_map_shape,
+             learn_rate=learn_rate)
+    # compute cross entropy loss. Normaly cross entropy involves summing
+    # over all classes and predictions but since the true probability is 
+    # either 1 or 0 and 1 only once for every image, we dont need to sum
+    # over all classes
+    
+    loss = -np.log(probabilities[label])
+    prediction = np.argmax(probabilities)
+    acc = 1 if prediction == label else 0 #np.argmax returns indices,
+    # np.max returns value
+    
+    
+    
+    #intermediates = {"dLoss_daL": dLoss, "dSoft_dinL": dSoft, "dLoss_dwL": dwL}
+    intermediates = "bla" #
+    
+    return probabilities, loss, acc, label, prediction, intermediates, weight, bias
+
+
+
