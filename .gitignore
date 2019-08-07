@@ -2,3 +2,5 @@ __pycache__
 *.R
 src
 cnn_from_scratch
+cnn_from_scratch/
+cnn-from-scratch/

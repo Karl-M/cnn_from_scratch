@@ -145,10 +145,8 @@ def training(n_iter, data, print_acc=True, print_loss=True, mini_batch_size=1):
 
 
 # convolution operation with randomnly initialized filters
-def convolute(image, number_filters):
+def convolute(image, number_filters, filter_matrix, bias_vector):
     
-    filter_matrix = np.random.randn(number_filters, 3, 3) / 9
-    bias_vector = np.random.randn(number_filters) / number_filters
     height, width = image.shape
     feature_map = np.zeros(shape=(number_filters, height - 3 + 1, width - 3 + 1))
 
@@ -254,10 +252,13 @@ def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.0
                    "sum_exp": inter_soft["sum_exp"]}
     return weight_matrix, bias_vector, test_values
     
-def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_rate=0.01):
+def feed_forward(image, label, number_filters, n_classes , weight, bias, 
+                 filter_matrix_conv, bias_vector_conv, learn_rate=0.01):
     
     image = image / 255 - 0.5
-    out_conv, inter_conv = convolute(image=image, number_filters=number_filters)
+    out_conv, inter_conv = convolute(image=image, number_filters=number_filters,
+                                     filter_matrix=filter_matrix_conv,
+                                     bias_vector=bias_vector_conv)
     out_maxpool, pooling_map_shape = max_pool(feature_map=out_conv)
     probabilities, inter_soft = softmax( output_maxpool=out_maxpool, 
                                                    n_classes=n_classes,

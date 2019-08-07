@@ -161,8 +161,7 @@ np.sum(np.isnan(weight_matrix), axis=0)
 np.isnan(bias_vector)
 
 
-bias_vector
-bias_vector_old
+bias_vector == bias_vector_old
 result[6]
 # 10% accuracy is equivalent to random guessing, to do better, we need to train
 # the network. Training consists of two phases. A forward pass and a backward pass.
