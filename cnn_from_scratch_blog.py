@@ -20,8 +20,8 @@ import sys
 #from pathlib import Path
 import mnist
 import os
-path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+#path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
 import functions as fun
 
@@ -106,7 +106,7 @@ bias_vector_old = bias_vector
 #bias_vector = bias_vector_old
 
 num_correct = 0
-for i in range(1000):
+for i in range(20):
     #false = 0
  #   print(f"bias_vector at iteration {i} : {bias_vector}")
     # print(f"weight matrix at iteration {i}: {weight_matrix}")
@@ -116,10 +116,14 @@ for i in range(1000):
                                  n_classes=10,
                                  weight=weight_matrix ,
                                  bias=bias_vector,
-                                 learn_rate=0.01)
+                                 learn_rate=0.001)
     
     weight_matrix = result[6]
     bias_vector = result[7]
+    print(bias_vector == bias_vector_old)
+    print(np.sum(weight_matrix == weight_matrix_old, axis=0))
+    print(f"bias_vector at iteration {i} : {bias_vector}")    
+    print(f"weight matrix at iteration {i}: {weight_matrix}")
 #    print(weight_matrix)
    # print(prediction, label, acc)
     num_correct += result[2]
@@ -136,7 +140,7 @@ for i in range(1000):
 weight_matrix
 weight_matrix_old
 
-sum(weight_matrix == weight_matrix_old)
+np.sum(weight_matrix == weight_matrix_old, axis=0)
 
 bias_vector
 bias_vector_old
