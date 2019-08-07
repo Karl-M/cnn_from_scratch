@@ -186,13 +186,16 @@ def max_pool(feature_map):
 # softmax
 
 def softmax(output_maxpool, n_classes, weight_matrix, bias_vector):
-
+    
     num_filter, height, width = output_maxpool.shape
     input_len = num_filter * height * width
     output_maxpool = np.reshape(output_maxpool, 
                                 newshape=(input_len))
     
+  #  bias_vector = np.zeros(shape=10)
+  #  weight_matrix = np.ones(shape=(1014, 10))
     input_softmax = output_maxpool.dot(weight_matrix) + bias_vector
+    
     exponentials = np.exp(input_softmax)
     sum_exponentials = np.sum(exponentials)
     probabilities = exponentials / sum_exponentials
@@ -218,10 +221,10 @@ def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.0
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
     dSoft = np.zeros(inter_soft["n_classes"])
+    dSoft = - inter_soft["exp"][label] * inter_soft["exp"] / (inter_soft["sum_exp"] ** 2)
     dSoft[label] = ((inter_soft["exp"][label] * (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
-         inter_soft["sum_exp"] * inter_soft["sum_exp"])
-    dSoft[label] = ((inter_soft["exp"][label] * (- inter_soft["exp"][label] )) )
-    #/ inter_soft["sum_exp"] * inter_soft["sum_exp"])
+         ( inter_soft["sum_exp"] ** 2) )
+
     # derivative of Loss with respect to bias vector in softmax
     dbL = np.zeros(inter_soft["n_classes"])
     dbL[label] = dSoft[label] * dLoss[label]
@@ -276,7 +279,7 @@ def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_r
     
     
     #intermediates = {"dLoss_daL": dLoss, "dSoft_dinL": dSoft, "dLoss_dwL": dwL}
-    intermediates = "bla" #
+#    intermediates = "bla" #
     
     return probabilities, loss, acc, label, prediction, inter_soft, weights, bias, update_vec
 
