@@ -43,7 +43,16 @@ test_images = mnist.test_images()[20:2000]
 test_labels = mnist.test_labels()[20:2000]
 
 
-conv, soft = fun.training(1001, 10, 12, test_images, test_labels, learn_rate=0.01, print_acc=True)
+conv, soft = fun.training(301, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
+
+conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
+                          weights_conv=conv,
+                          weights_soft=soft,
+                          learn_rate=0.01, print_acc=True)
+
 
 conv["bias_vector"]
 soft["bias_vector"]
+
+a == None
+type(a)

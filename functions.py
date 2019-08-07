@@ -119,15 +119,24 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
     return weight_matrix, bias_vector
 
 def training(n_iter, n_classes, n_filter, training_data, label, 
-             learn_rate=0.01, print_acc=True):
+             learn_rate=0.01, print_acc=True, weights_conv=None, weights_soft=None):
     
     num_correct = 0
     input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
-    filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
-    bias_vector_conv = np.random.randn(n_filter) / n_filter
     
-    weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
-    bias_vector_soft = np.random.randn(n_classes) / (n_classes)
+    if weights_conv == None:
+        filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
+        bias_vector_conv = np.random.randn(n_filter) / n_filter
+    else:
+        filter_matrix_conv = weights_conv["weight_matrix"]
+        bias_vector_conv = weights_conv["bias_vector"]
+        
+    if weights_soft == None:
+        weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
+        bias_vector_soft = np.random.randn(n_classes) / (n_classes)
+    else:
+        weight_matrix_soft = weights_soft["weight_matrix"]
+        bias_vector_soft= weights_soft["bias_vector"]
     
     for i in range(n_iter):
         image = training_data[i] / 255 - 0.5
