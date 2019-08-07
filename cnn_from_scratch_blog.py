@@ -106,7 +106,7 @@ bias_vector_old = bias_vector
 #bias_vector = bias_vector_old
 
 num_correct = 0
-for i in range(200):
+for i in range(1000):
     #false = 0
  #   print(f"bias_vector at iteration {i} : {bias_vector}")
   #  print(f"weight matrix at iteration {i}: {weight_matrix}")
@@ -121,14 +121,14 @@ for i in range(200):
     weight_matrix = result[6]
     bias_vector = result[7]
     update_vec = result[8]["dLoss"]
-    print(f'iteration: {i}: dLoss={result[8]["dLoss"]}')
-    print(f'iteration: {i}: dSoft={result[8]["dSoft"]}')
-    print(f'iteration: {i}: sum_exp={result[5]["sum_exp"]}')
-    print(f'iteration: {i}: exp={result[5]["exp"]}')
-    print(f'iteration: {i}: input_softmax={result[5]["input_softmax"]}')
-    print(f"Nans in Spalten bei i={i}: {np.sum(np.isnan(weight_matrix), axis=0)}")
-    print(f"Nans in Vector bei i={i}: {np.isnan(bias_vector)}")
-    print("")
+#    print(f'iteration: {i}: dLoss={result[8]["dLoss"]}')
+#    print(f'iteration: {i}: dSoft={result[8]["dSoft"]}')
+#    print(f'iteration: {i}: sum_exp={result[5]["sum_exp"]}')
+#    print(f'iteration: {i}: exp={result[5]["exp"]}')
+#    print(f'iteration: {i}: input_softmax={result[5]["input_softmax"]}')
+#    print(f"Nans in Spalten bei i={i}: {np.sum(np.isnan(weight_matrix), axis=0)}")
+#    print(f"Nans in Vector bei i={i}: {np.isnan(bias_vector)}")
+#    print("")
 
     #print(f"weight updates für bias vector: {update_vec}")
   #  print(f"delta_L: {update_vec}")
@@ -146,8 +146,10 @@ for i in range(200):
         accuracy = num_correct / i
         print(f"accuracy for the first {i} samples: {accuracy}")
         print(f"{num_correct} predictions for {i} samples were correct")
-        print(f"bias_vector at iteration {i} : {bias_vector}")
-        print(f"weight matrix at iteration {i}: {weight_matrix}")
+  #      print(f"bias_vector at iteration {i} : {bias_vector}")
+ #       print(f"weight matrix at iteration {i}: {weight_matrix}")
+        print(f"Nans in Spalten bei i={i}: {np.sum(np.isnan(weight_matrix), axis=0)}")
+        print(f"Nans in Vector bei i={i}: {np.isnan(bias_vector)}")
     
     #print(probabilities[label], prediction, label, acc)
 
