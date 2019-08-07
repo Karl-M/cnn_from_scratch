@@ -20,12 +20,10 @@ import sys
 #from pathlib import Path
 import mnist
 import os
-#path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
 import functions as fun
-
-os.listdir(path)
 
 #cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
 
@@ -39,8 +37,8 @@ os.listdir(path)
 
 # define forward pass through network
 
-test_images = mnist.test_images()[20:2000]
-test_labels = mnist.test_labels()[20:2000]
+test_images = mnist.test_images()[:2000]
+test_labels = mnist.test_labels()[:2000]
 
 
 conv, soft = fun.training(1001, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
@@ -50,6 +48,8 @@ conv, soft = fun.training(1001, 10, 8, test_images, test_labels,
                           weights_soft=soft,
                           learn_rate=0.01, print_acc=True)
 
+
+good_conv, good_soft = conv, soft
 
 conv["bias_vector"]
 soft["bias_vector"]
