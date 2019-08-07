@@ -118,40 +118,60 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
 
     return weight_matrix, bias_vector
 
+def training(n_iter, n_classes, n_filter, training_data, label, 
+             learn_rate=0.01, print_acc=True):
+    
+    num_correct = 0
+    input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
+    filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
+    bias_vector_conv = np.random.randn(n_filter) / n_filter
+    
+    weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
+    bias_vector_soft = np.random.randn(n_classes) / (n_classes)
+    
+    for i in range(n_iter):
+        image = training_data[i] / 255 - 0.5
+        
+        out_conv, intermediates_conv = convolute(
+                image=image, 
+                filter_matrix=filter_matrix_conv,
+                bias_vector=bias_vector_conv)
+        
+        out_maxpool = max_pool(feature_map=out_conv)
+        
+        probabilities, intermediates_soft = softmax(
+                output_maxpool=out_maxpool, 
+                weight_matrix=weight_matrix_soft,
+                bias_vector=bias_vector_soft)
+        
+        weight_matrix_soft, bias_vector_soft = backprop(
+                probabilities=probabilities,
+                inter_soft=intermediates_soft,
+                label=label[i],
+                learn_rate=learn_rate)
+        
+            
+  #      loss = -np.log(probabilities[label])
+        prediction = np.argmax(probabilities)
+     #   print(f"prediction: {prediction}")
+     #   print(f"label: {label[i]}")
+        acc = 1 if prediction == label[i] else 0
+        num_correct += acc
+        
+        if i % 100 == 0 and i != 0 and print_acc:
+            accuracy = num_correct / i
+            print(f"accuracy for the first {i} samples: {accuracy}")
+            print(f"{num_correct} predictions for {i} samples were correct")
+      #      print(bias_vector_conv)
+       #     print(bias_vector_soft)
+            
+    weights_conv = {"weight_matrix": filter_matrix_conv, 
+                    "bias_vector": bias_vector_conv}
+    
+    weights_soft = {"weight_matrix": weight_matrix_soft,
+                    "bias_vector": bias_vector_soft}
 
+    return weights_conv, weights_soft
     
-def feed_forward(image, label, number_filters, n_classes , weight, bias, 
-                 filter_matrix_conv, bias_vector_conv, learn_rate=0.01):
-    
-    image = image / 255 - 0.5
-    out_conv, inter_conv = convolute(image=image,
-                                     filter_matrix=filter_matrix_conv,
-                                     bias_vector=bias_vector_conv)
-    
-    out_maxpool = max_pool(feature_map=out_conv)
-    
-    probabilities, inter_soft = softmax( output_maxpool=out_maxpool, 
-                                                   weight_matrix=weight,
-                                                   bias_vector=bias)
-    
-    weights, bias = backprop(inter_soft=inter_soft, probabilities=probabilities,
-             label=label, learn_rate=learn_rate)
-    # compute cross entropy loss. Normaly cross entropy involves summing
-    # over all classes and predictions but since the true probability is 
-    # either 1 or 0 and 1 only once for every image, we dont need to sum
-    # over all classes
-    
-    loss = -np.log(probabilities[label])
-    prediction = np.argmax(probabilities)
-    acc = 1 if prediction == label else 0 #np.argmax returns indices,
-    # np.max returns value
-    
-    
-    
-    #intermediates = {"dLoss_daL": dLoss, "dSoft_dinL": dSoft, "dLoss_dwL": dwL}
-#    intermediates = "bla" #
-    
-    return probabilities, loss, acc, label, prediction, inter_soft, weights, bias
-
 
 
