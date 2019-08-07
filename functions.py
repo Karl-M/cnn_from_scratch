@@ -164,7 +164,11 @@ def convolute(image, number_filters):
 
 
 def max_pool(feature_map):
-    number_filters, height, width = feature_map.shape
+    if len(feature_map.shape) == 3:
+        number_filters, height, width = feature_map.shape
+    else:
+        number_filters = 0
+        height, width = feature_map.shape
 #    print(feature_map.shape)
     pooling_map = np.zeros(shape=(number_filters, height // 2, width // 2))
     for k in range(number_filters):
@@ -189,7 +193,7 @@ def softmax(output_maxpool, n_classes, weight_matrix, bias_vector):
                                 newshape=(input_len))
     
     input_softmax = output_maxpool.dot(weight_matrix) + bias_vector
-    exponentials = np.exp( - input_softmax)
+    exponentials = np.exp(input_softmax)
     sum_exponentials = np.sum(exponentials)
     probabilities = exponentials / sum_exponentials
     
@@ -214,11 +218,14 @@ def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.0
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
     dSoft = np.zeros(inter_soft["n_classes"])
-    dSoft[label] = ((inter_soft["exp"][label] * (inter_soft["exp"][label] - inter_soft["sum_exp"])) /
+    dSoft[label] = ((inter_soft["exp"][label] * (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
          inter_soft["sum_exp"] * inter_soft["sum_exp"])
+    dSoft[label] = ((inter_soft["exp"][label] * (- inter_soft["exp"][label] )) )
+    #/ inter_soft["sum_exp"] * inter_soft["sum_exp"])
     # derivative of Loss with respect to bias vector in softmax
     dbL = np.zeros(inter_soft["n_classes"])
     dbL[label] = dSoft[label] * dLoss[label]
+    #dbL[label] = dLoss[label]
     delta_L = dbL
     dL_dbL = delta_L
     # derivative with respect to weight matrix in softmax
@@ -237,10 +244,12 @@ def backprop(inter_soft, probabilities, label, pooling_map_shape, learn_rate=0.0
     
     #print(dL_dwL)
     # updating weights
-    weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL
+    weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL 
     bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
     
-    return weight_matrix, bias_vector
+    test_values = {"dLoss": dLoss, "dSoft": dSoft, "deltaL": delta_L, 
+                   "sum_exp": inter_soft["sum_exp"]}
+    return weight_matrix, bias_vector, test_values
     
 def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_rate=0.01):
     
@@ -251,7 +260,7 @@ def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_r
                                                    n_classes=n_classes,
                                                    weight_matrix=weight,
                                                    bias_vector=bias)
-    weights, bias = backprop(inter_soft=inter_soft, probabilities=probabilities,
+    weights, bias, update_vec = backprop(inter_soft=inter_soft, probabilities=probabilities,
              label=label, pooling_map_shape=pooling_map_shape,
              learn_rate=learn_rate)
     # compute cross entropy loss. Normaly cross entropy involves summing
@@ -269,7 +278,7 @@ def feed_forward(image, label, number_filters, n_classes , weight, bias, learn_r
     #intermediates = {"dLoss_daL": dLoss, "dSoft_dinL": dSoft, "dLoss_dwL": dwL}
     intermediates = "bla" #
     
-    return probabilities, loss, acc, label, prediction, intermediates, weights, bias
+    return probabilities, loss, acc, label, prediction, inter_soft, weights, bias, update_vec
 
 
 

@@ -92,38 +92,50 @@ test_softmax
 
 # define forward pass through network
 
-test_images = mnist.test_images()[1000:2000]
-test_labels = mnist.test_labels()[1000:2000]
+test_images = mnist.test_images()[20:2000]
+test_labels = mnist.test_labels()[20:2000]
 
 import functions as fun
 
 n_classes = 10
 input_len = 1014
-weight_matrix = np.random.randn(input_len, n_classes) / input_len
+weight_matrix = np.random.randn(input_len, n_classes) / (input_len)
 weight_matrix_old  = weight_matrix
-bias_vector = np.random.randn(n_classes) / n_classes
+bias_vector = np.random.randn(n_classes) / (n_classes)
 bias_vector_old = bias_vector
 #bias_vector = bias_vector_old
 
 num_correct = 0
-for i in range(20):
+for i in range(10):
     #false = 0
  #   print(f"bias_vector at iteration {i} : {bias_vector}")
-    # print(f"weight matrix at iteration {i}: {weight_matrix}")
+  #  print(f"weight matrix at iteration {i}: {weight_matrix}")
     result = fun.feed_forward(image=test_images[i], 
                               label=test_labels[i], 
                                  number_filters=6, 
                                  n_classes=10,
                                  weight=weight_matrix ,
                                  bias=bias_vector,
-                                 learn_rate=0.001)
+                                 learn_rate=0.1)
     
     weight_matrix = result[6]
     bias_vector = result[7]
-    print(bias_vector == bias_vector_old)
-    print(np.sum(weight_matrix == weight_matrix_old, axis=0))
-    print(f"bias_vector at iteration {i} : {bias_vector}")    
-    print(f"weight matrix at iteration {i}: {weight_matrix}")
+    update_vec = result[8]["dLoss"]
+    print(f'iteration: {i}: dLoss={result[8]["dLoss"]}')
+    print(f'iteration: {i}: dSoft={result[8]["dSoft"]}')
+    print(f'iteration: {i}: dSoft={result[8]["sum_exp"]}')
+    print("")
+
+  #  print(f"Nans in Spalten bei i={i}: {np.sum(np.isnan(weight_matrix), axis=0)}")
+  #  print(f"Nans in Vector bei i={i}: {np.isnan(bias_vector)}")
+    #print(f"weight updates für bias vector: {update_vec}")
+  #  print(f"delta_L: {update_vec}")
+    
+    #print(f"Einträge im bias vector noch gleich? i = {i}: {bias_vector == bias_vector_old}")
+    #print(f"Spalten der weight matrix noch gleich? i = {i}: {np.sum(weight_matrix == weight_matrix_old, axis=0)}")
+    #print(np.sum(weight_matrix == weight_matrix_old, axis=1))
+    #print(f"bias_vector at iteration {i} : {bias_vector}")    
+    #print(f"weight matrix at iteration {i}: {weight_matrix}")
 #    print(weight_matrix)
    # print(prediction, label, acc)
     num_correct += result[2]
@@ -140,7 +152,10 @@ for i in range(20):
 weight_matrix
 weight_matrix_old
 
-np.sum(weight_matrix == weight_matrix_old, axis=0)
+np.sum(weight_matrix == weight_matrix_old, axis=1)
+np.sum(np.isnan(weight_matrix), axis=0)
+np.isnan(bias_vector)
+
 
 bias_vector
 bias_vector_old
