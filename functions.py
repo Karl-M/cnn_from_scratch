@@ -79,6 +79,7 @@ def softmax(output_maxpool, weight_matrix, bias_vector):
                              }
     return probabilities, intermediates
 
+
 def backprop(inter_soft, probabilities, label, learn_rate=0.01):
     ps = probabilities
     
@@ -92,7 +93,9 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
 
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
-    daL_dzL = np.zeros(inter_soft["n_classes"])
+    #daL_dzL = np.zeros(inter_soft["n_classes"])
+    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
+               (inter_soft["sum_exp"] ** 2))
     daL_dzL[label] = ((inter_soft["exp"][label] * 
            (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
         ( inter_soft["sum_exp"] ** 2) )
@@ -117,6 +120,7 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
     
 
     return weight_matrix, bias_vector
+
 
 def training(n_iter, n_classes, n_filter, training_data, label, 
              learn_rate=0.01, print_acc=True, weights_conv=None, weights_soft=None):
