@@ -117,6 +117,8 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
     
 
     return weight_matrix, bias_vector
+
+
     
 def feed_forward(image, label, number_filters, n_classes , weight, bias, 
                  filter_matrix_conv, bias_vector_conv, learn_rate=0.01):

@@ -57,56 +57,56 @@ filter_matrix_conv.shape[0]
 weight_matrix.shape[1]
 #bias_vector = bias_vector_old
 
-num_correct = 0
-for i in range(1001):
-    #false = 0
- #   print(f"bias_vector at iteration {i} : {bias_vector}")
-  #  print(f"weight matrix at iteration {i}: {weight_matrix}")
-    result = fun.feed_forward(image=test_images[i], 
-                              label=test_labels[i], 
-                                 number_filters=6, 
-                                 n_classes=10,
-                                 weight=weight_matrix ,
-                                 bias=bias_vector,
-                                 filter_matrix_conv=filter_matrix_conv,
-                                 bias_vector_conv=bias_vector_conv,
-                                 learn_rate=0.1)
+
+def training(n_iter, n_classes, n_filter, training_data, label, 
+             learn_rate=0.01, print_acc=True):
     
-    weight_matrix = result[6]
-    bias_vector = result[7]
-
-    num_correct += result[2]
-   # print(num_correct)
-    if i % 100 == 0 and i != 0:
-        accuracy = num_correct / i
-        print(f"accuracy for the first {i} samples: {accuracy}")
-        print(f"{num_correct} predictions for {i} samples were correct")
-  #      print(f"bias_vector at iteration {i} : {bias_vector}")
- #       print(f"weight matrix at iteration {i}: {weight_matrix}")
-   #     print(f"Nans in Spalten bei i={i}: {np.sum(np.isnan(weight_matrix), axis=0)}")
-    #    print(f"Nans in Vector bei i={i}: {np.isnan(bias_vector)}")
+    num_correct = 0
+    input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
+    filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
+    bias_vector_conv = np.random.randn(n_filter) / n_filter
     
-    #print(probabilities[label], prediction, label, acc)
+    weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
+    bias_vector_soft = np.random.randn(n_classes) / (n_classes)
+    
+    for i in range(n_iter):
+        image = training_data[i] / 255 - 0.5
+        
+        out_conv, intermediates_conv = fun.convolute(
+                image=image, 
+                filter_matrix=filter_matrix_conv,
+                bias_vector=bias_vector_conv)
+        
+        out_maxpool = fun.max_pool(feature_map=out_conv)
+        
+        probabilities, intermediates_soft = fun.softmax(
+                output_maxpool=out_maxpool, 
+                weight_matrix=weight_matrix_soft,
+                bias_vector=bias_vector_soft)
+        
+        weight_matrix_soft, bias_vector_soft = fun.backprop(
+                probabilities=probabilities,
+                inter_soft=intermediates_soft,
+                label=label[i],
+                learn_rate=learn_rate)
+        
+            
+  #      loss = -np.log(probabilities[label])
+        prediction = np.argmax(probabilities)
+     #   print(f"prediction: {prediction}")
+     #   print(f"label: {label[i]}")
+        acc = 1 if prediction == label[i] else 0
+        
+        num_correct += acc
+        
+        if i % 100 == 0 and i != 0 and print_acc:
+            accuracy = num_correct / i
+            print(f"accuracy for the first {i} samples: {accuracy}")
+            print(f"{num_correct} predictions for {i} samples were correct")
 
-weight_matrix
-weight_matrix_old
+    return
 
-np.sum(weight_matrix == weight_matrix_old, axis=1)
-np.sum(np.isnan(weight_matrix), axis=0)
-np.isnan(bias_vector)
+training(1001, 10, 6, test_images, test_labels, learn_rate=0.1, print_acc=True)
 
-
-bias_vector == bias_vector_old
-result[6]
-# 10% accuracy is equivalent to random guessing, to do better, we need to train
-# the network. Training consists of two phases. A forward pass and a backward pass.
-
-test_images[1].shape
-
-np.prod(test_images.shape)
-
-
-
-test_images[1] / 255 -0.5
 
 
