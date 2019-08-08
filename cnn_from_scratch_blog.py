@@ -54,3 +54,16 @@ good_conv, good_soft = conv, soft
 conv["bias_vector"]
 soft["bias_vector"]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
