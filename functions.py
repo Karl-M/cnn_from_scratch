@@ -80,7 +80,7 @@ def softmax(output_maxpool, weight_matrix, bias_vector):
     return probabilities, intermediates
 
 
-def backprop(inter_soft, probabilities, label, learn_rate=0.01):
+def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     ps = probabilities
     
     pooling_map_shape = inter_soft["output_maxpool_flattened"].shape
@@ -157,7 +157,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 weight_matrix=weight_matrix_soft,
                 bias_vector=bias_vector_soft)
         
-        weight_matrix_soft, bias_vector_soft = backprop(
+        weight_matrix_soft, bias_vector_soft = backprop_softmax(
                 probabilities=probabilities,
                 inter_soft=intermediates_soft,
                 label=label[i],
