@@ -80,7 +80,7 @@ def softmax(output_maxpool, weight_matrix, bias_vector):
     return probabilities, intermediates
 
 
-def backprop(inter_soft, probabilities, label, learn_rate=0.01):
+def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     ps = probabilities
     
     pooling_map_shape = inter_soft["output_maxpool_flattened"].shape
@@ -93,9 +93,9 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
 
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
-    #daL_dzL = np.zeros(inter_soft["n_classes"])
-    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
-               (inter_soft["sum_exp"] ** 2))
+    daL_dzL = np.zeros(inter_soft["n_classes"])
+#    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
+#               (inter_soft["sum_exp"] ** 2))
     daL_dzL[label] = ((inter_soft["exp"][label] * 
            (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
         ( inter_soft["sum_exp"] ** 2) )
@@ -107,13 +107,13 @@ def backprop(inter_soft, probabilities, label, learn_rate=0.01):
     dL_dbL = deltaL
     
     # derivative with respect to weight matrix in softmax
-    daL_dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
-    daL_dwL[:, label] = inter_soft["output_maxpool_flattened"]
+    dzL_dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
+    dzL_dwL[:, label] = inter_soft["output_maxpool_flattened"]
     
     # derivative of Loss function with respect to weight matrix in softmax
     dL_dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
-    dL_dwL[:, label] = daL_dwL.dot(deltaL) 
-
+    #dL_dwL[:, label] = dzL_dwL.dot(deltaL) # version from blog    
+    dL_dwL[:, label] = np.dot(deltaL[label], inter_soft["output_maxpool_flattened"]) # my version
     # updating weights
     weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL 
     bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
@@ -157,13 +157,13 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 weight_matrix=weight_matrix_soft,
                 bias_vector=bias_vector_soft)
         
-        weight_matrix_soft, bias_vector_soft = backprop(
+        weight_matrix_soft, bias_vector_soft = backprop_softmax(
                 probabilities=probabilities,
                 inter_soft=intermediates_soft,
                 label=label[i],
                 learn_rate=learn_rate)
         
-            
+        #print(out_maxpool.shape)
   #      loss = -np.log(probabilities[label])
         prediction = np.argmax(probabilities)
      #   print(f"prediction: {prediction}")
