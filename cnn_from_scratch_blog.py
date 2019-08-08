@@ -20,8 +20,8 @@ import sys
 #from pathlib import Path
 import mnist
 import os
-#path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
 import functions as fun
 

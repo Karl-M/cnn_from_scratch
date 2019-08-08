@@ -50,6 +50,31 @@ def max_pool(feature_map):
     return pooling_map
 
 
+def max_pool(feature_map):
+    
+    if len(feature_map.shape) < 3:
+        number_filters = 1
+        height, width = feature_map.shape
+        feature_map = np.reshape(test_mat, (1, height, width))
+    else: 
+        number_filters, height, width = feature_map.shape
+        
+    pooling_map = np.zeros(shape=(number_filters, height // 2, width // 2))
+    
+    # need indices from max for backprop
+    index = np.full(feature_map.shape, False) # index array
+    
+    for k in range(number_filters):
+       for i in range(height // 2):
+            for j in range(width // 2):
+                res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
+                pooling_map[k, i, j] = np.amax(res)                
+                where = np.where(res == np.max(res))
+                #print(where[0][0], where[1][0])
+                index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][where[0][0], where[1][0]]  = 1
+              #  print(index)
+                
+    return pooling_map, index
 
 # softmax
 
@@ -150,7 +175,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 filter_matrix=filter_matrix_conv,
                 bias_vector=bias_vector_conv)
         
-        out_maxpool = max_pool(feature_map=out_conv)
+        out_maxpool, index_max = max_pool(feature_map=out_conv)
         
         probabilities, intermediates_soft = softmax(
                 output_maxpool=out_maxpool, 
