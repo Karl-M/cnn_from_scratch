@@ -34,28 +34,11 @@ def convolute(image, filter_matrix, bias_vector):
 
 
 def max_pool(feature_map):
-    if len(feature_map.shape) == 3:
-        number_filters, height, width = feature_map.shape
-    else:
-        number_filters = 0
-        height, width = feature_map.shape
-#    print(feature_map.shape)
-    pooling_map = np.zeros(shape=(number_filters, height // 2, width // 2))
-    for k in range(number_filters):
-       for i in range(height // 2):
-            for j in range(width // 2):
-                res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
-                pooling_map[k, i, j] = np.max(res)
-                
-    return pooling_map
-
-
-def max_pool(feature_map):
     
     if len(feature_map.shape) < 3:
         number_filters = 1
         height, width = feature_map.shape
-        feature_map = np.reshape(test_mat, (1, height, width))
+        feature_map = np.reshape(feature_map, (1, height, width))
     else: 
         number_filters, height, width = feature_map.shape
         
@@ -63,16 +46,19 @@ def max_pool(feature_map):
     
     # need indices from max for backprop
     index = np.full(feature_map.shape, False) # index array
-    
+    print(feature_map.shape)
+    print(index.shape)
     for k in range(number_filters):
        for i in range(height // 2):
             for j in range(width // 2):
                 res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
                 pooling_map[k, i, j] = np.amax(res)                
                 where = np.where(res == np.max(res))
-                #print(where[0][0], where[1][0])
-                index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][where[0][0], where[1][0]]  = 1
+                m = where[0][0]
+                n = where[1][0]
+                index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][m, n]  = True
               #  print(index)
+    print(index.shape)
                 
     return pooling_map, index
 
@@ -143,8 +129,18 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL 
     bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
     
+    intermediates = {"deltaL": deltaL}
+    
 
-    return weight_matrix, bias_vector
+    return weight_matrix, bias_vector, intermediates
+
+
+def backprop_maxpool(feature_map, index_max, deltaL, label):
+    
+    feature_map_back = feature_map.copy()
+    feature_map_back[index_max] = deltaL[label]
+    
+    return feature_map_back
 
 
 def training(n_iter, n_classes, n_filter, training_data, label, 
@@ -168,6 +164,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         bias_vector_soft= weights_soft["bias_vector"]
     
     for i in range(n_iter):
+        print(i)
         image = training_data[i] / 255 - 0.5
         
         out_conv, intermediates_conv = convolute(
@@ -182,11 +179,16 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 weight_matrix=weight_matrix_soft,
                 bias_vector=bias_vector_soft)
         
-        weight_matrix_soft, bias_vector_soft = backprop_softmax(
+        weight_matrix_soft, bias_vector_soft, intermediates_back_soft = backprop_softmax(
                 probabilities=probabilities,
                 inter_soft=intermediates_soft,
                 label=label[i],
                 learn_rate=learn_rate)
+        
+        feature_map_back = backprop_maxpool(feature_map=out_conv, 
+                                            index_max=index_max, 
+                                            label=label[i],
+                                            deltaL=intermediates_back_soft["deltaL"])
         
         #print(out_maxpool.shape)
   #      loss = -np.log(probabilities[label])
@@ -209,7 +211,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
     weights_soft = {"weight_matrix": weight_matrix_soft,
                     "bias_vector": bias_vector_soft}
 
-    return weights_conv, weights_soft
+    return weights_conv, weights_soft, feature_map_back
     
 
 
