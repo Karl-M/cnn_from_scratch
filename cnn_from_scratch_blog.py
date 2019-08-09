@@ -60,17 +60,35 @@ bias_vector_conv = np.random.randn(n_filter) / n_filter
 test_conv, intermediates = fun.convolute(test_images[0], filter_matrix_conv, bias_vector_conv)
 
 
-pooling_map, index = fun.max_pool(test_conv[0, :, :])
+pooling_map, index = fun.max_pool(test_conv)
+
+test_conv[0].shape
+index.shape
+index[0, 0:4, 0:4]
+test_labels[0]
+delta = np.random.randn(10)
+delta = np.round(delta)
+delta[7] = 50
+
+# funktion überschreibt test_conv? wegen immutable objects????
+feature_back = fun.backprop_maxpool(test_conv[0, :, :], index[0, :, :], delta, 7)
+
+test_conv[0]
+
+
+np.sum(test_conv[0] == feature_back, axis=0)
+feature_back.shape
+test_conv[0, 0:4, 0:4]
+feature_back[0:4, 0:4]
+
+
 
 index.shape
+test_conv.shape
+feature_back.shape
+test_conv[0, 10:12, 10:12]
 
-for i, j in enumerate(test_conv):
-    print(test_conv[i, j])
-
-
-test_conv[0, 0:2, 0:2]
-
-feature_back[0, 0:2, 0:2]
+feature_back[0, 10:12, 10:12]
 pooling_map.shape
 conv, soft, feature_back = fun.training(1, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
 

@@ -41,11 +41,6 @@ test_mat = np.round(test_mat, 2)
 pooling_map, index_maxpool = max_pool(feature_map=test_mat)
 
 
-def backprop_maxpool(feature_map, index_max, deltaL, label):
-    
-    feature_map[index_max] = deltaL[label]
-    
-    return feature_map
     
     
        

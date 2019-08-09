@@ -63,7 +63,8 @@ def max_pool(feature_map):
     
     # need indices from max for backprop
     index = np.full(feature_map.shape, False) # index array
-    
+    print(feature_map.shape)
+    print(index.shape)
     for k in range(number_filters):
        for i in range(height // 2):
             for j in range(width // 2):
@@ -74,6 +75,7 @@ def max_pool(feature_map):
                 n = where[1][0]
                 index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][m, n]  = True
               #  print(index)
+    print(index.shape)
                 
     return pooling_map, index
 
@@ -152,9 +154,10 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
 
 def backprop_maxpool(feature_map, index_max, deltaL, label):
     
-    feature_map[index_max] = deltaL[label]
+    feature_map_back = feature_map.copy()
+    feature_map_back[index_max] = deltaL[label]
     
-    return feature_map
+    return feature_map_back
 
 
 def training(n_iter, n_classes, n_filter, training_data, label, 
