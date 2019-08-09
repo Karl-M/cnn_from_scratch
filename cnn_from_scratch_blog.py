@@ -41,7 +41,7 @@ test_images = mnist.test_images()[:2000]
 test_labels = mnist.test_labels()[:2000]
 
 
-conv, soft = fun.training(1001, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
+conv, soft, feature_back = fun.training(101, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
 
 conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
                           weights_conv=conv,
@@ -53,7 +53,26 @@ good_conv, good_soft = conv, soft
 
 conv["bias_vector"]
 soft["bias_vector"]
+n_filter = 8
+filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
+bias_vector_conv = np.random.randn(n_filter) / n_filter
 
+test_conv, intermediates = fun.convolute(test_images[0], filter_matrix_conv, bias_vector_conv)
+
+
+pooling_map, index = fun.max_pool(test_conv[0, :, :])
+
+index.shape
+
+for i, j in enumerate(test_conv):
+    print(test_conv[i, j])
+
+
+test_conv[0, 0:2, 0:2]
+
+feature_back[0, 0:2, 0:2]
+pooling_map.shape
+conv, soft, feature_back = fun.training(1, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
 
 
 
