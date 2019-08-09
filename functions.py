@@ -27,8 +27,10 @@ def convolute(image, filter_matrix, bias_vector):
                 res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
                 feature_map[k, i, j] = np.sum(res) + bias_vector[k]
     
-    intermediates = {"num_fil": number_filters, "height": height,
-                          "width": width}
+    intermediates = {"num_fil": number_filters, 
+                     "height": height,
+                     "width": width
+                     }
     
     return feature_map, intermediates
 
@@ -46,8 +48,7 @@ def max_pool(feature_map):
     
     # need indices from max for backprop
     index = np.full(feature_map.shape, False) # index array
-    print(feature_map.shape)
-    print(index.shape)
+
     for k in range(number_filters):
        for i in range(height // 2):
             for j in range(width // 2):
@@ -57,8 +58,6 @@ def max_pool(feature_map):
                 m = where[0][0]
                 n = where[1][0]
                 index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][m, n]  = True
-              #  print(index)
-    print(index.shape)
                 
     return pooling_map, index
 
@@ -137,7 +136,7 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
 
 def backprop_maxpool(feature_map, index_max, deltaL, label):
     
-    feature_map_back = feature_map.copy()
+    feature_map_back = np.ones(shape=feature_map.shape)
     feature_map_back[index_max] = deltaL[label]
     
     return feature_map_back
@@ -164,7 +163,6 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         bias_vector_soft= weights_soft["bias_vector"]
     
     for i in range(n_iter):
-        print(i)
         image = training_data[i] / 255 - 0.5
         
         out_conv, intermediates_conv = convolute(
