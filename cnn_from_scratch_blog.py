@@ -58,18 +58,6 @@ good_conv, good_soft = conv, soft
 conv["bias_vector"]
 soft["bias_vector"]
 
-test_mat = np.random.randn(4, 3).round()
-index = np.full((4, 3), False)
-index[0, 1] = True
-index[2, 2] = True
-test_mat.shape
-
-help(np.dot)
-
-test_mat[index] = 77
-test_mat
-def backprop_conv(feature_map_back, index_mat, deltaL, lab):
-    
 
 
 

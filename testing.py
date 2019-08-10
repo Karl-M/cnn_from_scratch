@@ -8,11 +8,18 @@ Created on Thu Aug  8 09:55:43 2019
 # testing stuff 
 
 import numpy as np
-
+import sys
+import os
 path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+path2 = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
 #path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
+sys.path.append(path2)
+
 import functions as fun
+from conv import Conv3x3
+from maxpool import MaxPool2
+from softmax import Softmax
 
 
 def max_pool(feature_map):
@@ -82,11 +89,53 @@ test_filter1 = np.array([[0, 0, 0], [1, 2, 1], [0, 0, 0]])
 test_filter2 = test_filter1.T
 
 test_filter = np.array([test_filter1, test_filter2])
-bias_vector = np.array([0, 0])
-bias_vector[1]
-len(test_filter.shape)
-test_conv, inter_conv = fun.convolute(image=test_image, filter_matrix=test_filter, bias_vector=bias_vector)
+test_conv, inter_conv = fun.convolute(image=test_image, filter_matrix=test_filter)
 
 out_maxpool, index_maxpool = fun.max_pool(test_conv)
 
-out_maxpool
+ind = np.where(index_maxpool[0] == True) # for these indices we need gradients with respect to inmage?
+
+
+test_conv[index_maxpool]  # diese indices wollen wir mit deltaL * image[]
+
+
+test_conv[0, ind[0], ind[1]] # if this works for image, wooooow!
+
+test_conv.shape
+ind[0]
+ind[1]
+
+test_image.shape 
+
+test_image
+
+dConv.shape
+dConv = np.zeros(test_filter.shape)
+
+# endlich!
+for f in range(2):
+    for i in range(4):
+        for j in range(4):
+            dConv[f] += test_image[i:i+3, j:j+3] # regions!, endlich!
+  
+
+deltaL =  np.random.randn(2).round()
+out_backmax = fun.backprop_maxpool(test_conv, index_maxpool, deltaL, 1)
+
+
+test_image
+def backprop_conv(image, , filter_conv, back_maxpool):
+    
+    dConv = np.zeros(filter_conv.shape)
+    
+    for f in range(2):
+    for i in range(4):
+        for j in range(4):
+            dConv[f] += test_image[i:i+3, j:j+3] # regions!, endlich!
+
+
+
+
+
+
+

@@ -61,6 +61,7 @@ def max_pool(feature_map):
                 where = np.where(res == np.max(res))
                 m = where[0][0]
                 n = where[1][0]
+             #   print(m, n)
                 index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][m, n]  = True
                 
     return pooling_map, index
@@ -138,12 +139,24 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     return weight_matrix, bias_vector, intermediates
 
 
-def backprop_convolute(feature_map, index_max, deltaL, label):
+def backprop_maxpool(feature_map, index_max, deltaL, label):
     
-    feature_map_back = feature_map.copy()
+    feature_map_back = np.zeros(feature_map.shape)
     feature_map_back[index_max] = feature_map_back[index_max] - deltaL[label]
     
     return feature_map_back
+
+def backprop_conv(image, filter_conv, back_maxpool):
+    
+    dConv = np.zeros(filter_conv.shape)
+    
+    for f in range(2):
+        for i in range(4):
+            for j in range(4):
+                dConv[f] += test_image[i:i+3, j:j+3] * back_maxpool[f, i, j]
+            
+    return dConv
+
 
 
 def training(n_iter, n_classes, n_filter, training_data, label, 
@@ -157,7 +170,6 @@ def training(n_iter, n_classes, n_filter, training_data, label,
        # bias_vector_conv = np.random.randn(n_filter) / n_filter
     else:
         filter_matrix_conv = weights_conv["weight_matrix"]
-        bias_vector_conv = weights_conv["bias_vector"]
         
     if weights_soft == None:
         weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
@@ -165,7 +177,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
     else:
         weight_matrix_soft = weights_soft["weight_matrix"]
         bias_vector_soft= weights_soft["bias_vector"]
-    
+        
     for i in range(n_iter):
         image = training_data[i] / 255 - 0.5
         
@@ -187,7 +199,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 label=label[i],
                 learn_rate=learn_rate)
         
-        feature_map_back = backprop_convolute(feature_map=out_conv, 
+        feature_map_back = backprop_maxpool(feature_map=out_conv, 
                                             index_max=index_max, 
                                             label=label[i],
                                             deltaL=intermediates_back_soft["deltaL"])
@@ -207,8 +219,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
       #      print(bias_vector_conv)
        #     print(bias_vector_soft)
             
-    weights_conv = {"weight_matrix": filter_matrix_conv, 
-                    "bias_vector": bias_vector_conv}
+    weights_conv = {"weight_matrix": filter_matrix_conv}
     
     weights_soft = {"weight_matrix": weight_matrix_soft,
                     "bias_vector": bias_vector_soft}
