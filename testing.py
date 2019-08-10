@@ -9,6 +9,12 @@ Created on Thu Aug  8 09:55:43 2019
 
 import numpy as np
 
+path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+sys.path.append(path)
+import functions as fun
+
+
 def max_pool(feature_map):
     
     if len(feature_map.shape) < 3:
@@ -58,3 +64,29 @@ def backprop_maxpool(feature_map, index_max, gradient):
     return 
         
 backprop_maxpool(max_pool(feature_map=test_mat), test_mat)        
+
+
+
+
+
+
+test_image = np.array([list(range(1, 7)), 
+          list(range(6, 12)),
+          list(range(11, 17)),
+          list(range(16, 22)),
+          list(range(21, 27)),
+          list(range(26, 32))])
+
+test_image.shape
+test_filter1 = np.array([[0, 0, 0], [1, 2, 1], [0, 0, 0]])
+test_filter2 = test_filter1.T
+
+test_filter = np.array([test_filter1, test_filter2])
+bias_vector = np.array([0, 0])
+bias_vector[1]
+len(test_filter.shape)
+test_conv, inter_conv = fun.convolute(image=test_image, filter_matrix=test_filter, bias_vector=bias_vector)
+
+out_maxpool, index_maxpool = fun.max_pool(test_conv)
+
+out_maxpool

@@ -17,7 +17,11 @@ import numpy as np
 # convolution operation with randomnly initialized filters
 def convolute(image, filter_matrix, bias_vector):
     
-    number_filters = filter_matrix.shape[0]
+    if len(filter_matrix.shape) < 3:
+        number_filters = 1
+    else: 
+        number_filters = filter_matrix.shape[0]
+    
     height, width = image.shape
     feature_map = np.zeros(shape=(number_filters, height - 3 + 1, width - 3 + 1))
 

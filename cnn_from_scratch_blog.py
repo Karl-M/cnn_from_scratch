@@ -41,7 +41,10 @@ test_images = mnist.test_images()[:2000]
 test_labels = mnist.test_labels()[:2000]
 
 
-conv, soft, feature_back = fun.training(101, 10, 8, test_images, test_labels, learn_rate=0.01, print_acc=True)
+conv, soft, feature_back = fun.training(1001, 10, 8, 
+                                        test_images, test_labels
+                                        , learn_rate=0.01, 
+                                        print_acc=True)
 
 conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
                           weights_conv=conv,
@@ -50,6 +53,7 @@ conv, soft = fun.training(1001, 10, 8, test_images, test_labels,
 
 
 good_conv, good_soft = conv, soft
+
 
 conv["bias_vector"]
 soft["bias_vector"]
