@@ -15,7 +15,7 @@ import numpy as np
 
 
 # convolution operation with randomnly initialized filters
-def convolute(image, filter_matrix, bias_vector):
+def convolute(image, filter_matrix):
     
     if len(filter_matrix.shape) < 3:
         number_filters = 1
@@ -29,7 +29,7 @@ def convolute(image, filter_matrix, bias_vector):
        for i in range(height - 3 + 1):
             for j in range(width - 3 + 1):
                 res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
-                feature_map[k, i, j] = np.sum(res) + bias_vector[k]
+                feature_map[k, i, j] = np.sum(res) 
     
     intermediates = {"num_fil": number_filters, 
                      "height": height,
@@ -138,10 +138,10 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     return weight_matrix, bias_vector, intermediates
 
 
-def backprop_maxpool(feature_map, index_max, deltaL, label):
+def backprop_convolute(feature_map, index_max, deltaL, label):
     
-    feature_map_back = np.ones(shape=feature_map.shape)
-    feature_map_back[index_max] = deltaL[label]
+    feature_map_back = feature_map.copy()
+    feature_map_back[index_max] = feature_map_back[index_max] - deltaL[label]
     
     return feature_map_back
 
@@ -154,7 +154,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
     
     if weights_conv == None:
         filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
-        bias_vector_conv = np.random.randn(n_filter) / n_filter
+       # bias_vector_conv = np.random.randn(n_filter) / n_filter
     else:
         filter_matrix_conv = weights_conv["weight_matrix"]
         bias_vector_conv = weights_conv["bias_vector"]
@@ -171,8 +171,8 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         
         out_conv, intermediates_conv = convolute(
                 image=image, 
-                filter_matrix=filter_matrix_conv,
-                bias_vector=bias_vector_conv)
+                filter_matrix=filter_matrix_conv
+                )
         
         out_maxpool, index_max = max_pool(feature_map=out_conv)
         
@@ -187,7 +187,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 label=label[i],
                 learn_rate=learn_rate)
         
-        feature_map_back = backprop_maxpool(feature_map=out_conv, 
+        feature_map_back = backprop_convolute(feature_map=out_conv, 
                                             index_max=index_max, 
                                             label=label[i],
                                             deltaL=intermediates_back_soft["deltaL"])
