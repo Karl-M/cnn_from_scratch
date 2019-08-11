@@ -115,23 +115,32 @@ dConv = np.zeros(test_filter.shape)
 # endlich!
 for f in range(2):
     for i in range(4):
-        for j in range(4):
-            dConv[f] += test_image[i:i+3, j:j+3] # regions!, endlich!
+        for j in range(4):  
+            dConv[f] += test_image[i:i+3, j:j+3] * out_backmax[f, i, j]
   
 
 deltaL =  np.random.randn(2).round()
+deltaL[1] =100
 out_backmax = fun.backprop_maxpool(test_conv, index_maxpool, deltaL, 1)
 
 
 test_image
-def backprop_conv(image, , filter_conv, back_maxpool):
+def backprop_conv(image, filter_conv, back_maxpool):
     
     dConv = np.zeros(filter_conv.shape)
     
     for f in range(2):
-    for i in range(4):
-        for j in range(4):
-            dConv[f] += test_image[i:i+3, j:j+3] # regions!, endlich!
+        for i in range(4):
+            for j in range(4):
+                dConv[f] += test_image[i:i+3, j:j+3] * back_maxpool[f, i, j]
+            
+    return dConv
+
+
+backprop_conv(test_image, test_filter, out_backmax) * 0.01
+
+
+test_image[0:3, 0:3] * test_filter[0] 
 
 
 

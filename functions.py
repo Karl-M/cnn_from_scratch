@@ -36,7 +36,7 @@ def convolute(image, filter_matrix):
                      "width": width
                      }
     
-    return feature_map, intermediates
+    return feature_map, filter_matrix, intermediates
 
 
 def max_pool(feature_map):
@@ -108,9 +108,9 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
 
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
-    daL_dzL = np.zeros(inter_soft["n_classes"])
-#    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
-#               (inter_soft["sum_exp"] ** 2))
+    #daL_dzL = np.zeros(inter_soft["n_classes"])
+    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
+               (inter_soft["sum_exp"] ** 2))
     daL_dzL[label] = ((inter_soft["exp"][label] * 
            (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
         ( inter_soft["sum_exp"] ** 2) )
@@ -146,16 +146,21 @@ def backprop_maxpool(feature_map, index_max, deltaL, label):
     
     return feature_map_back
 
-def backprop_conv(image, filter_conv, back_maxpool):
-    
+def backprop_conv(image, filter_conv, back_maxpool, learn_rate=0.01):
+    num_filters, height, width = filter_conv.shape
     dConv = np.zeros(filter_conv.shape)
+    k = 0
+    for f in range(num_filters):
+        for i in range(height):
+            for j in range(width):
+                k += 1
+                dConv[f] += image[i:i+3, j:j+3] * back_maxpool[f, i, j]
+    print(k)        
+    filter_back = filter_conv.copy()
+    filter_back = filter_back - learn_rate * dConv
     
-    for f in range(2):
-        for i in range(4):
-            for j in range(4):
-                dConv[f] += test_image[i:i+3, j:j+3] * back_maxpool[f, i, j]
             
-    return dConv
+    return filter_back
 
 
 
@@ -179,9 +184,10 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         bias_vector_soft= weights_soft["bias_vector"]
         
     for i in range(n_iter):
+        print("This is iteration ", i)
         image = training_data[i] / 255 - 0.5
         
-        out_conv, intermediates_conv = convolute(
+        out_conv, filter_mat, intermediates_conv = convolute(
                 image=image, 
                 filter_matrix=filter_matrix_conv
                 )
@@ -203,6 +209,15 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                                             index_max=index_max, 
                                             label=label[i],
                                             deltaL=intermediates_back_soft["deltaL"])
+#        print(intermediates_back_soft["deltaL"])
+        print(feature_map_back.shape)
+        filter_matrix_conv = backprop_conv(
+                image=image, 
+                filter_conv=filter_mat, 
+                back_maxpool=feature_map_back,
+                learn_rate=0.1)
+        
+#        print(filter_matrix_conv)
         
         #print(out_maxpool.shape)
   #      loss = -np.log(probabilities[label])
