@@ -149,7 +149,7 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     return weight_matrix, bias_vector, intermediates, deltaL_cor
 
 
-def backprop_maxpool(feature_map, index_max, deltaL_cor, label):
+def backprop_maxpool(feature_map, index_max, deltaL_cor):
     
     feature_map_back = np.zeros(feature_map.shape)
 #    print("shape feature map input back maxpool", feature_map_back.shape)
@@ -167,14 +167,14 @@ def backprop_maxpool(feature_map, index_max, deltaL_cor, label):
     return feature_map_back
 
 def backprop_conv(image, filter_conv, back_maxpool, learn_rate=0.01):
-    num_filters, height, width = back_maxpool.shape
+    num_filters, height, width = filter_conv.shape
     dConv = np.zeros(filter_conv.shape)
     k = 0
     for f in range(num_filters):
         for i in range(height):
             for j in range(width):
                 k += 1
-                dConv[f] += image[i:i+3, j:j+3] * back_maxpool[f, i, j]
+                dConv[f, i, j] += np.sum(image[i:i+3, j:j+3] * back_maxpool[f, i, j])
  #   print("iterationsn backconv: ", k)       
     
     filter_back = filter_conv.copy()
@@ -232,19 +232,23 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         
         feature_map_back = backprop_maxpool(feature_map=out_conv, 
                                             index_max=index_max, 
-                                            label=label[i],
                                             deltaL_cor=deltaL_cor)
-
-    #    print(feature_map_back.shape)
-#        print("dLoss_daL: ", intermediates_back_soft["dLoss_daL"])
-#        print("daL_dzL: ", intermediates_back_soft["daL_dzL"]) 
-   #     print("summe backweights:", np.sum(feature_map_back))
+       
         filter_matrix_conv = backprop_conv(
                 image=image, 
                 filter_conv=filter_mat, 
-                back_maxpool=feature_map_back,
-                learn_rate=0.01)
-        
+                back_maxpool=feature_map_back)
+     
+
+   #      print(feature_map_back[0])
+#        for i in range(8):
+#            print(np.count_nonzero(feature_map_back[i]))
+    #    print(feature_map_back[1])
+#        print("dLoss_daL: ", intermediates_back_soft["dLoss_daL"])
+#        print("daL_dzL: ", intermediates_back_soft["daL_dzL"]) 
+   #     print("summe backweights:", np.sum(feature_map_back))
+   
+            
      #   print(filter_matrix_conv)
         
         #print(out_maxpool.shape)

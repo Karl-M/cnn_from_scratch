@@ -56,15 +56,15 @@ weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
 bias_vector_soft = np.random.randn(n_classes) / (n_classes)
 
 
-conv, soft, feature_back = fun.training(1001, 10, 8, 
+conv, soft, feature_back = fun.training(1001, 10, 12, 
                                         test_images, test_labels
-                                        , learn_rate=0.01, 
+                                        , learn_rate=0.1, 
                                         print_acc=True)
 
-conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
+conv, soft = fun.training(1001, 10, 12, test_images, test_labels, 
                           weights_conv=conv,
                           weights_soft=soft,
-                          learn_rate=0.01, print_acc=True)
+                          learn_rate=0.1, print_acc=True)
 
 
 good_conv, good_soft = conv, soft
@@ -83,13 +83,11 @@ Conv3x3.forward(it_regions, test_images[0])
 
 
 
+5 * np.array([1, 3, 4])
 
 
 
-
-
-
-
+feature_back[0].shape
 
 
 
