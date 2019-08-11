@@ -58,7 +58,7 @@ def max_pool(feature_map):
             for j in range(width // 2):
                 res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
                 pooling_map[k, i, j] = np.amax(res)                
-                where = np.where(res == np.max(res))
+                where = np.where(res == np.amax(res))
                 m = where[0][0]
                 n = where[1][0]
              #   print(m, n)
@@ -108,9 +108,9 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
 
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
-    #daL_dzL = np.zeros(inter_soft["n_classes"])
-    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
-               (inter_soft["sum_exp"] ** 2))
+    daL_dzL = np.zeros(inter_soft["n_classes"])
+#    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
+#               (inter_soft["sum_exp"] ** 2))
     daL_dzL[label] = ((inter_soft["exp"][label] * 
            (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
         ( inter_soft["sum_exp"] ** 2) )
@@ -120,7 +120,10 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     deltaL[label] = dLoss_daL[label] * daL_dzL[label]
     #dbL[label] = dLoss[label]
     dL_dbL = deltaL
+    deltaL_cor = np.dot(inter_soft["weight_matrix"], deltaL)
     
+  #  deltaL_cor = deltaL_cor.reshape((8, 13, 13))
+#    print("deltaL_cor shape in softmax: ",  deltaL_cor.shape)
     # derivative with respect to weight matrix in softmax
     dzL_dwL = np.zeros(shape=(np.prod(pooling_map_shape), inter_soft["n_classes"]))
     dzL_dwL[:, label] = inter_soft["output_maxpool_flattened"]
@@ -133,16 +136,28 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     weight_matrix = inter_soft["weight_matrix"] - learn_rate * dL_dwL 
     bias_vector = inter_soft["bias_vector"] - learn_rate * dL_dbL
     
-    intermediates = {"deltaL": deltaL}
+    intermediates = {"deltaL": deltaL,
+                     "dLoss_daL": dLoss_daL,
+                     "daL_dzL": daL_dzL}
     
 
-    return weight_matrix, bias_vector, intermediates
+    return weight_matrix, bias_vector, intermediates, deltaL_cor
 
 
-def backprop_maxpool(feature_map, index_max, deltaL, label):
+def backprop_maxpool(feature_map, index_max, deltaL_cor, label):
     
     feature_map_back = np.zeros(feature_map.shape)
-    feature_map_back[index_max] = feature_map_back[index_max] - deltaL[label]
+#    print("shape feature map input back maxpool", feature_map_back.shape)
+#    print("deltaL_cor shape: ", deltaL_cor.shape)
+#    print("shape index matrix: ", index_max.shape)
+#    print("n true values in index mat: ", np.sum(index_max))
+#    print(feature_map_back[index_max].shape)
+#    index_max = index_max.reshape(feature_map.shape)
+#    print(index_max.shape)
+    
+    #feature_map_back[index_max] = feature_map_back[index_max] - deltaL[label]
+    feature_map_back[index_max] = deltaL_cor
+    
     
     return feature_map_back
 
@@ -155,7 +170,7 @@ def backprop_conv(image, filter_conv, back_maxpool, learn_rate=0.01):
             for j in range(width):
                 k += 1
                 dConv[f] += image[i:i+3, j:j+3] * back_maxpool[f, i, j]
-    print(k)        
+  #  print(k)        
     filter_back = filter_conv.copy()
     filter_back = filter_back - learn_rate * dConv
     
@@ -184,7 +199,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         bias_vector_soft= weights_soft["bias_vector"]
         
     for i in range(n_iter):
-        print("This is iteration ", i)
+   #     print("This is iteration ", i)
         image = training_data[i] / 255 - 0.5
         
         out_conv, filter_mat, intermediates_conv = convolute(
@@ -199,7 +214,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 weight_matrix=weight_matrix_soft,
                 bias_vector=bias_vector_soft)
         
-        weight_matrix_soft, bias_vector_soft, intermediates_back_soft = backprop_softmax(
+        weight_matrix_soft, bias_vector_soft, intermediates_back_soft, deltaL_cor = backprop_softmax(
                 probabilities=probabilities,
                 inter_soft=intermediates_soft,
                 label=label[i],
@@ -208,16 +223,18 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         feature_map_back = backprop_maxpool(feature_map=out_conv, 
                                             index_max=index_max, 
                                             label=label[i],
-                                            deltaL=intermediates_back_soft["deltaL"])
-#        print(intermediates_back_soft["deltaL"])
-        print(feature_map_back.shape)
+                                            deltaL_cor=deltaL_cor)
+#        print("deltaL: ", intermediates_back_soft["deltaL"])
+#        print("dLoss_daL: ", intermediates_back_soft["dLoss_daL"])
+#        print("daL_dzL: ", intermediates_back_soft["daL_dzL"]) 
+#        print(np.sum(feature_map_back))
         filter_matrix_conv = backprop_conv(
                 image=image, 
                 filter_conv=filter_mat, 
                 back_maxpool=feature_map_back,
-                learn_rate=0.1)
+                learn_rate=0.01)
         
-#        print(filter_matrix_conv)
+     #   print(filter_matrix_conv)
         
         #print(out_maxpool.shape)
   #      loss = -np.log(probabilities[label])

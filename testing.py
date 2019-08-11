@@ -89,7 +89,7 @@ test_filter1 = np.array([[0, 0, 0], [1, 2, 1], [0, 0, 0]])
 test_filter2 = test_filter1.T
 
 test_filter = np.array([test_filter1, test_filter2])
-test_conv, inter_conv = fun.convolute(image=test_image, filter_matrix=test_filter)
+test_conv, filter_mat, inter_conv = fun.convolute(image=test_image, filter_matrix=test_filter)
 
 out_maxpool, index_maxpool = fun.max_pool(test_conv)
 
@@ -112,37 +112,41 @@ test_image
 dConv.shape
 dConv = np.zeros(test_filter.shape)
 
-# endlich!
-for f in range(2):
-    for i in range(4):
-        for j in range(4):  
-            dConv[f] += test_image[i:i+3, j:j+3] * out_backmax[f, i, j]
-  
-
 deltaL =  np.random.randn(2).round()
 deltaL[1] =100
 out_backmax = fun.backprop_maxpool(test_conv, index_maxpool, deltaL, 1)
 
+np.sum(out_backmax)
+
+test_conv
+test_image
 
 test_image
+
 def backprop_conv(image, filter_conv, back_maxpool):
     
     dConv = np.zeros(filter_conv.shape)
-    
+    k = 0
     for f in range(2):
         for i in range(4):
             for j in range(4):
+                print(back_maxpool[f, i, j])
+                k += 1
                 dConv[f] += test_image[i:i+3, j:j+3] * back_maxpool[f, i, j]
             
-    return dConv
+    return dConv, k
 
 
-backprop_conv(test_image, test_filter, out_backmax) * 0.01
+backprop_conv(test_image, test_filter, out_backmax) 
 
 
 test_image[0:3, 0:3] * test_filter[0] 
 
+test_conv.shape
+index_maxpool.shape
+test_conv[index_maxpool].shape
 
+np.sum(index_maxpool)
 
 
 
