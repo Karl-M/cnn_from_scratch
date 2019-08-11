@@ -45,6 +45,7 @@ from softmax import Softmax
 
 test_images = mnist.test_images()[:2000]
 test_labels = mnist.test_labels()[:2000]
+
 n_filter=8
 input_dim=26*26*n_filter
 n_classes=10
@@ -55,7 +56,7 @@ weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
 bias_vector_soft = np.random.randn(n_classes) / (n_classes)
 
 
-conv, soft, feature_back = fun.training(1, 10, 8, 
+conv, soft, feature_back = fun.training(1001, 10, 8, 
                                         test_images, test_labels
                                         , learn_rate=0.01, 
                                         print_acc=True)

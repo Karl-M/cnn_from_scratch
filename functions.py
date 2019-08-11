@@ -105,22 +105,27 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate=0.01):
     # derivative of loss function with respect to output last layer
     dLoss_daL = np.zeros(inter_soft["n_classes"]) # dL / da
     dLoss_daL[label] = - 1 / ps[label]
-
+    
+    
     # derivative of softmax with respect to input 
     # (input =  - (output_maxpool.dot(weight_matrix) + bias_vector) )
-    daL_dzL = np.zeros(inter_soft["n_classes"])
-#    daL_dzL = ((inter_soft["exp"][label] * inter_soft["exp"]) / 
-#               (inter_soft["sum_exp"] ** 2))
-    daL_dzL[label] = ((inter_soft["exp"][label] * 
-           (- inter_soft["exp"][label] + inter_soft["sum_exp"])) /
-        ( inter_soft["sum_exp"] ** 2) )
+ #   daL_dzL = np.zeros(inter_soft["n_classes"])
+    exp = inter_soft["exp"]
+    S = inter_soft["sum_exp"]
+    daL_dzL = - (exp[label] * exp) / (S ** 2)
+    
+    daL_dzL[label] = (exp[label] *  (S - exp[label])) / ( S ** 2) 
 
     # derivative of Loss with respect to bias vector in softmax
-    deltaL = np.zeros(inter_soft["n_classes"])
-    deltaL[label] = dLoss_daL[label] * daL_dzL[label]
+    #deltaL = np.zeros(inter_soft["n_classes"])
+    #deltaL[label] = dLoss_daL[label] * daL_dzL[label]
+    
+    # new try
+    deltaL = dLoss_daL[label] * daL_dzL
+    
     #dbL[label] = dLoss[label]
     dL_dbL = deltaL
-    deltaL_cor = np.dot(inter_soft["weight_matrix"], deltaL)
+    deltaL_cor = np.dot(deltaL, inter_soft["weight_matrix"].T)
     
   #  deltaL_cor = deltaL_cor.reshape((8, 13, 13))
 #    print("deltaL_cor shape in softmax: ",  deltaL_cor.shape)
@@ -183,6 +188,10 @@ def backprop_conv(image, filter_conv, back_maxpool, learn_rate=0.01):
 def training(n_iter, n_classes, n_filter, training_data, label, 
              learn_rate=0.01, print_acc=True, weights_conv=None, weights_soft=None):
     
+#    permutation = np.random.permutation(len(train_images))
+#    train_images = train_images[permutation]
+#    train_labels = train_labels[permutation]
+
     num_correct = 0
     input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
     
@@ -229,7 +238,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
     #    print(feature_map_back.shape)
 #        print("dLoss_daL: ", intermediates_back_soft["dLoss_daL"])
 #        print("daL_dzL: ", intermediates_back_soft["daL_dzL"]) 
-        print("summe backweights:", np.sum(feature_map_back))
+   #     print("summe backweights:", np.sum(feature_map_back))
         filter_matrix_conv = backprop_conv(
                 image=image, 
                 filter_conv=filter_mat, 
@@ -250,6 +259,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
             accuracy = num_correct / i
             print(f"accuracy for the first {i} samples: {accuracy}")
             print(f"{num_correct} predictions for {i} samples were correct")
+            print(filter_matrix_conv[7])
       #      print(bias_vector_conv)
        #     print(bias_vector_soft)
             
