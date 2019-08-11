@@ -196,14 +196,14 @@ def training(n_iter, n_classes, n_filter, training_data, label,
     input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
     
     if weights_conv == None:
-        filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
+        np.random.seed(seed=666); filter_matrix_conv = np.random.randn(n_filter, 3, 3) / 9
        # bias_vector_conv = np.random.randn(n_filter) / n_filter
     else:
         filter_matrix_conv = weights_conv["weight_matrix"]
         
     if weights_soft == None:
-        weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
-        bias_vector_soft = np.random.randn(n_classes) / (n_classes)
+        np.random.seed(seed=666); weight_matrix_soft = np.random.randn(input_dim, n_classes) / (input_dim)
+        np.random.seed(seed=666); bias_vector_soft = np.random.randn(n_classes) / (n_classes)
     else:
         weight_matrix_soft = weights_soft["weight_matrix"]
         bias_vector_soft= weights_soft["bias_vector"]
@@ -233,12 +233,12 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         feature_map_back = backprop_maxpool(feature_map=out_conv, 
                                             index_max=index_max, 
                                             deltaL_cor=deltaL_cor)
-       
-        filter_matrix_conv = backprop_conv(
-                image=image, 
-                filter_conv=filter_mat, 
-                back_maxpool=feature_map_back)
-     
+#       
+#        filter_matrix_conv = backprop_conv(
+#                image=image, 
+#                filter_conv=filter_mat, 
+#                back_maxpool=feature_map_back)
+#     
 
    #      print(feature_map_back[0])
 #        for i in range(8):
