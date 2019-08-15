@@ -68,16 +68,9 @@ def backprop_maxpool(feature_map, index_max, gradient):
 backprop_maxpool(max_pool(feature_map=test_mat), test_mat)        
 
 
+test_image = np.round(np.random.randn(6, 6) * 3)
 
 
-
-
-test_image = np.array([list(range(1, 7)), 
-          list(range(6, 12)),
-          list(range(11, 17)),
-          list(range(16, 22)),
-          list(range(21, 27)),
-          list(range(26, 32))])
 
 test_image.shape
 test_filter1 = np.array([[0, 0, 0], [1, 2, 1], [0, 0, 0]])
@@ -107,67 +100,12 @@ def backprop_maxpool(feature_map, index_max):
 back_max = backprop_maxpool(feature_map=test_conv, index_max=index_maxpool)
 
 
-def backprop_conv(image, filter_conv, back_maxpool, learn_rate=0.01):
-    
-    num_filters, height, width = back_maxpool.shape
-    dConv = np.zeros(filter_conv.shape)
-    
-    for f in range(num_filters):
-        for m in range(height):
-            for n in range(width):
-                if back_maxpool[f, m, n]:
-                    print(f, m, n)
-                    #print(np.sum(image[i+m, j+n]))
- #   print("iterationsn backconv: ", k)       
-    
-    filter_back = filter_conv.copy()
-    filter_back = filter_back - learn_rate * dConv
-    
-            
-    return filter_back
-
 
 backprop_conv(test_image, test_filter, back_max)
 
 
-np.sum(test_image[0:3, 0:3])
 
-test_conv[back_max]
-test_conv.shape
-back_max.shape
-test_image
-
-maximas = test_conv[0][back_max[0]]
-
-
-col_index_max =np.where(index_maxpool[0])[1]
-print(row_index_max)
-print(col_index_max)
-
-
-i, j = 1, 2
-dConv = np.zeros(shape=(1, 2))
-dConv
-
-sum_conv = 0
-#for f in range(2):
-f=0
-row_index_max = np.where(index_maxpool[f] == True)[0]
-col_index_max = np.where(index_maxpool[f] == True)[1]
-for m in range(test_conv.shape[1]):
-    for n in range(test_conv.shape[2]):
-        if m in row_index_max and n in col_index_max:
-#            print(m, n, test_image[i+m, j+n])
-            sum_conv += test_image[i+m, j+n]
-            print(sum_conv)
-print(dConv)
-#dConv[f] = sum_conv
-            
-dConv
-        
-test_conv.shape
-
-def backprop_conv(image, filter_conv, index_maxpool):
+def backprop_max_conv(image, filter_conv, index_maxpool, learn_rate):
     
     n_filters, height, width = filter_conv.shape
     dConv = np.zeros(shape=(n_filters, height, width))
@@ -180,11 +118,49 @@ def backprop_conv(image, filter_conv, index_maxpool):
         for i in range(height):
             for j in range(width):
                 test = 0
-                for m in range(4):
-                    for n in range(4):
+                for m in range(index_maxpool[f].shape[0]):
+                    for n in range(index_maxpool[f].shape[1]):
                         if m in row_index_max and n in col_index_max:                
-                            test += image[i+m, j+n]
+                            print(f"i: {i}, j: {j}, m: {m}, n: {n}, pixelwert: {image[i+m, j+n]}")
+                            test += image[i+m, j+n] 
                             dConv[f, i, j] = test
                             
-    return dConv
+  #  filter_conv -= learn_rate * dConv
     
+    return dConv
+
+
+def backprop_max_conv(image, filter_conv, index_maxpool, learn_rate):
+    
+    n_filters, height, width = filter_conv.shape
+    dConv = np.zeros(shape=(n_filters, height, width))
+    
+    for f in range(n_filters):
+        row_index_max = np.where(index_maxpool[f] == True)[0]
+        col_index_max = np.where(index_maxpool[f] == True)[1]
+        print(row_index_max)
+        print(col_index_max)
+        for i in range(height):
+            for j in range(width):
+                test = 0
+                for m in range(index_maxpool[f].shape[0]):
+                    for n in range(index_maxpool[f].shape[1]):
+                        if m == row_index_max[m] and n == col_index_max[n]:                
+                            print(f"i: {i}, j: {j}, m: {m}, n: {n}, pixelwert: {image[i+m, j+n]}")
+                            test += image[i+m, j+n] 
+                            dConv[f, i, j] = test
+                            
+  #  filter_conv -= learn_rate * dConv
+    
+    return dConv  
+
+  
+index_maxpool[0].shape[1]
+
+np.where(index_maxpool[0] == True)
+backprop_max_conv(test_image, test_filter, index_maxpool, learn_rate=0.1)
+
+test_filter
+
+test_filter - 0.1 * back_out_conv
+
