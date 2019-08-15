@@ -25,7 +25,8 @@ label = 0
 
 conv = Conv3x3(3)  # 28x28x1 -> 26x26x8
 pool = MaxPool2()  # 26x26x8 -> 13x13x8
-softmax = Softmax(4 * 3 * 3, 2)  # 13x13x8 -> 10
+dim_maxpool = np.prod(4 * 3 * 3)
+softmax = Softmax(dim_maxpool, 6)  # 13x13x8 -> 10
 
 Conv3x3(3).filters
 num_filters = 3
@@ -46,12 +47,19 @@ out_max = pool.forward(out_conv)
 out_maxown, index_maxown = fun.max_pool(out_convown)
 # feedforward softmax layer
 out_soft, weights = softmax.forward(out_max) #
-np.random.seed(seed=666); weight_soft = (np.random.randn(size, 2) / size) * 10
-bias_soft = np.zeros(2)
-probabilities, inter_soft = fun.softmax(output_maxpool=maxpool_map, 
+np.random.seed(seed=666); weight_soft = (np.random.randn(dim_maxpool, 6) / dim_maxpool) * 10
+bias_soft = np.zeros(6)
+probabilities, inter_soft = fun.softmax(output_maxpool=out_maxown, 
                                         weight_matrix=weight_soft, 
                                         bias_vector=bias_soft)
 
+# I get the same as the probabilities in my softmax function,
+# but in the version from blog, I cant compute it like that, why?
+np.exp(np.dot(out_maxown.flatten(), weight_soft)) / np.sum(np.exp(np.dot(out_maxown.flatten(), weight_soft)), axis=0)
+np.exp(np.dot(out_max.flatten(), weight_soft)) / np.sum(np.exp(np.dot(out_max.flatten(), weight_soft)), axis=0)
+
+dim_maxpool
+softmax.weights
 
 ##################### backprop
 
@@ -59,8 +67,8 @@ probabilities, inter_soft = fun.softmax(output_maxpool=maxpool_map,
 gradient_L = np.zeros(10)
 gradient_L[label] = -1 / out_soft[label]
 gradient_soft = softmax.backprop(gradient_L, 0.01)[0]
-weight_soft, bias_soft, inter_softback, gradient_softown, inter_soft = fun.backprop_softmax(inter_soft=inter_soft, 
-                     maxpool_shape=maxpool_map.shape,
+weight_soft, bias_soft, inter_softback, gradient_softown, inter_softback = fun.backprop_softmax(inter_soft=inter_soft, 
+#                     maxpool_shape=out_maxown.shape,
                      probabilities=probabilities,
                      label=label, 
                      learn_rate=0.01)

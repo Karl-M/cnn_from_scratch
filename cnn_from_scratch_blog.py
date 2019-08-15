@@ -46,13 +46,13 @@ test_labels = mnist.test_labels()[:2000]
 
 conv, soft, feature_back = fun.training(1001, 10, 8, 
                                         test_images, test_labels
-                                        , learn_rate=0.05, 
+                                        , learn_rate=0.1, 
                                         print_acc=True)
 
 conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
                           weights_conv=conv,
                           weights_soft=soft,
-                          learn_rate=0.1, print_acc=True)
+                          learn_rate=0.01, print_acc=True)
 
 
 good_conv, good_soft = conv, soft
