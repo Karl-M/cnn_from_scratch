@@ -133,7 +133,7 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate):
     deltaL_cor = np.dot(deltaL, inter_soft["weight_matrix"].T)
     ### weil einträge von backPropMax in der falschen Reihenfolge befüllt werden,
     # mal mit transponieren probieren
-  #  deltaL_cor = deltaL_cor.reshape(maxpool_shape)
+    deltaL_cor = deltaL_cor.reshape(pooling_map_shape)
    # print("deltaL_cor: ", deltaL_cor)
 #    print("deltaL_cor shape in softmax: ",  deltaL_cor.shape)
     # derivative with respect to weight matrix in softmax
@@ -166,7 +166,7 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate):
 def backprop_maxpool(feature_map, index_max, deltaL_cor):
     
     feature_map_back = np.zeros(feature_map.shape)
-    feature_map_back[index_max] =  deltaL_cor
+    feature_map_back[index_max] =  deltaL_cor.flatten()
     
     return feature_map_back
 
