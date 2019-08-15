@@ -23,13 +23,13 @@ def convolute(image, filter_matrix):
         number_filters = filter_matrix.shape[0]
     
     height, width = image.shape
-    feature_map = np.zeros(shape=(number_filters, height - 3 + 1, width - 3 + 1))
+    feature_map = np.zeros(shape=(height - 3 + 1, width - 3 + 1, number_filters))
 
     for k in range(number_filters):
        for i in range(height - 3 + 1):
             for j in range(width - 3 + 1):
                 res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
-                feature_map[k, i, j] = np.sum(res) 
+                feature_map[i, j, k] = np.sum(res) 
     
     intermediates = {"num_fil": number_filters, 
                      "height": height,
@@ -44,11 +44,11 @@ def max_pool(feature_map):
     if len(feature_map.shape) < 3:
         number_filters = 1
         height, width = feature_map.shape
-        feature_map = np.reshape(feature_map, (1, height, width))
+        feature_map = np.reshape((1, height, width), feature_map)
     else: 
-        number_filters, height, width = feature_map.shape
+         height, width, number_filters = feature_map.shape
         
-    pooling_map = np.zeros(shape=(number_filters, height // 2, width // 2))
+    pooling_map = np.zeros(shape=(height // 2, width // 2,number_filters))
     
     # need indices from max for backprop
     index = np.full(feature_map.shape, False) # index array
@@ -56,13 +56,13 @@ def max_pool(feature_map):
     for k in range(number_filters):
        for i in range(height // 2):
             for j in range(width // 2):
-                res = feature_map[k, i*2:i*2 + 2, j*2:(j*2 + 2)]
-                pooling_map[k, i, j] = np.amax(res)                
+                res = feature_map[i*2:i*2 + 2, j*2:(j*2 + 2), k]
+                pooling_map[i, j, k] = np.amax(res)                
                 where = np.where(res == np.amax(res))
                 m = where[0][0]
                 n = where[1][0]
              #   print(m, n)
-                index[k, i*2:i*2 + 2, j*2:(j*2 + 2)][m, n]  = True
+                index[i*2:i*2 + 2, j*2:(j*2 + 2), k][m, n]  = True
 #    print("regions maxpool: ", k)           
     return pooling_map, index
 
