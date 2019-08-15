@@ -162,13 +162,31 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate):
 
     return weight_matrix, bias_vector, intermediates, deltaL_cor, dL_dwL
 
+#
+#def backprop_maxpool(feature_map, index_max, deltaL_cor):
+#    
+#    feature_map_back = np.zeros(feature_map.shape)
+#    feature_map_back[index_max] =  deltaL_cor.flatten()
+#    
+#    return feature_map_back
+#
 
-def backprop_maxpool(feature_map, index_max, deltaL_cor):
-    
-    feature_map_back = np.zeros(feature_map.shape)
-    feature_map_back[index_max] =  deltaL_cor.flatten()
-    
-    return feature_map_back
+def backprop_maxpool(feature_map, gradient):
+
+    h = feature_map.shape[1]
+    w = feature_map.shape[2]
+    num_filters = feature_map.shape[0]
+    dMP = np.zeros(shape=feature_map.shape)
+    for f in range(num_filters):
+        for i in range(h // 2):
+            for j in range(w // 2):
+                region = feature_map[f, 2*i:2*i+2, 2*j:2*j+2]
+                for m in range(2):
+                    for n in range(2):
+                        if region[m, n] == np.amax(region):
+                            dMP[f, 2*i:2*i+2, 2*j:2*j+2][m, n] = gradient[f, i, j]
+        
+    return dMP
 
 def backprop_conv(image, filter_conv, index_max, feature_gradient, learn_rate):           
     #gradient = gradient.reshape(shape_outmax)
@@ -236,8 +254,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 learn_rate=learn_rate)
         
         feature_map_back = backprop_maxpool(feature_map=out_conv, 
-                                            index_max=index_max, 
-                                            deltaL_cor=deltaL_cor)
+                                            gradient=deltaL_cor)
 #        
         filter_matrix_conv = backprop_conv(image, filter_mat, index_max, feature_map_back, learn_rate)
 #       
