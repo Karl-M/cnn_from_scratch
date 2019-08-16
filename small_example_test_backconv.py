@@ -9,10 +9,18 @@ import numpy as np
 import os
 import sys
 import mnist
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
-path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
-sys.path.append(path)
-sys.path.append(path2)
+
+# for work
+# path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+# path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+
+# home
+path_functions_blog = "/home/konstantin/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+path_functions_own = "/home/konstantin/Documents/master_arbeit/nn_in_r/"
+
+
+sys.path.append(path_functions_blog)
+sys.path.append(path_functions_own)
 import functions as fun
 from conv import Conv3x3
 from maxpool import MaxPool2
@@ -60,8 +68,8 @@ if np.sum(out_max== out_maxown) == np.prod(out_maxown.shape):
 # feedforward softmax layer
 out_soft, weights, summe = softmax.forward(out_max) #
 np.random.seed(seed=666); weight_soft = (np.random.randn(dim_maxpool, 10) / dim_maxpool) * 10
-#bias_soft = np.zeros(6)
-bias_soft = np.array([-5, -1, 4, 5, 6, 7] )
+bias_soft = np.zeros(10)
+#bias_soft = np.array([-5, -1, 4, 5, 6, 7] )
 probabilities, inter_soft = fun.softmax(output_maxpool=out_max, 
                                         weight_matrix=weight_soft, 
                                         bias_vector=bias_soft)

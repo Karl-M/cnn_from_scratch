@@ -31,15 +31,15 @@ def convolute(image, filter_matrix):
                 res = image[i:(i + 3), j:(j + 3)] * filter_matrix[k]
                 feature_map[i, j, k] = np.sum(res) 
     
-    intermediates = {"num_fil": number_filters, 
-                     "height": height,
-                     "width": width
-                     }
-    
-    return feature_map, filter_matrix, intermediates
+    #    intermediates = {"num_fil": number_filters, 
+    #                     "height": height,
+    #                     "width": width
+    #                     }
+    #    
+    return feature_map, filter_matrix
 
 
-def max_pool(feature_map):
+def maxpool(feature_map):
     
     if len(feature_map.shape) < 3:
         number_filters = 1
@@ -192,7 +192,7 @@ def backprop_maxpool(feature_map, gradient):
 
 
 
-def backprop_conv(image, filter_conv, feature_gradient, learn_rate):           
+def backprop_conv(image, filter_conv, gradient, learn_rate):           
     #gradient = gradient.reshape(shape_outmax)
     dpool_dfilter = np.zeros(shape=filter_conv.shape)
     n_filters = dpool_dfilter.shape[0]
@@ -201,15 +201,15 @@ def backprop_conv(image, filter_conv, feature_gradient, learn_rate):
     
     for f in range(n_filters):
         #row_max, col_max = np.where(index_max[:, :, f] == True)
-        row_max, col_max = np.where(feature_gradient[:, :, f] != 0)
+        row_max, col_max = np.where(gradient[:, :, f] != 0)
         for i in range(n_rows):
             for j in range(n_cols):
                 for m, n in zip(row_max, col_max):
-                    dpool_dfilter[f, i, j ] += image[m+i, n+j] * feature_gradient[m, n, f]
+                    dpool_dfilter[f, i, j ] += image[m+i, n+j] * gradient[m, n, f]
                     
     filter_conv = filter_conv - learn_rate * dpool_dfilter
 
-    return filter_conv, dpool_dfilter
+    return filter_conv#, dpool_dfilter
 
 
 
