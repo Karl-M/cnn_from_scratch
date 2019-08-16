@@ -75,7 +75,7 @@ def debug_cnn(n_iter):
         #    print(out_soft)
         gradient_L = np.zeros(10)
         gradient_L[label] = -1 / blog_out_soft[label]
-        blog_gradient_soft, blog_dL_dw, blog_weights_updated, blog_biases_updated = softmax.backprop(
+        blog_gradient_soft, blog_dL_dw = softmax.backprop(
                 gradient_L, 0.1)
         blog_gradient_max = pool.backprop(blog_gradient_soft)
         blog_gradient_conv, blog_filter_update = conv.backprop(blog_gradient_max, 0.1)
@@ -111,15 +111,15 @@ def debug_cnn(n_iter):
         else:
             print("gradients softmax are not the same")
         ## weight updates weight matrix softmax layer
-        if np.sum(own_weight_soft == blog_weights_updated) == np.prod(own_weight_soft.shape):
-            print("Yeaaah! updated weightmatrix softmax is the same")
-        else:
-            print("updated weightmatrix softmax is not the same")
-        ## weight updates bias vector
-        if np.sum(own_bias_soft == blog_biases_updated) == np.prod(blog_biases_updated.shape):
-            print("Yeaaah! Updated bias vector softmax is the same")
-        else:
-            print("updated bias vector is not the same")
+#        if np.sum(own_weight_soft == blog_weights_updated) == np.prod(own_weight_soft.shape):
+#            print("Yeaaah! updated weightmatrix softmax is the same")
+#        else:
+#            print("updated weightmatrix softmax is not the same")
+#        ## weight updates bias vector
+#        if np.sum(own_bias_soft == blog_biases_updated) == np.prod(blog_biases_updated.shape):
+#            print("Yeaaah! Updated bias vector softmax is the same")
+#        else:
+#            print("updated bias vector is not the same")
         #### maxpool
         if np.sum(own_gradient_max== blog_gradient_max) == np.prod(blog_gradient_max.shape):
             print("Yeaaah! gradients maxpool layer are the same")
