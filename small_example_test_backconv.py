@@ -23,13 +23,12 @@ np.random.seed(seed=666); image = np.random.randn(10, 8) * 3
 image = np.round(image)
 label = 0
 
-conv = Conv3x3(3)  # 28x28x1 -> 26x26x8
+conv = Conv3x3(5)  # 28x28x1 -> 26x26x8
 pool = MaxPool2()  # 26x26x8 -> 13x13x8
-dim_maxpool = np.prod(4 * 3 * 3)
+dim_maxpool = np.prod(4 * 3 * 5)
 softmax = Softmax(dim_maxpool, 6)  # 13x13x8 -> 10
 
-Conv3x3(3).filters
-num_filters = 3
+num_filters = 5
 np.random.seed(seed=666); filter_conv = np.random.randn(num_filters, 3, 3) * 3# / 9
 filter_conv = np.round(filter_conv)
 
@@ -42,71 +41,66 @@ filter_conv = np.round(filter_conv)
 # feedforward conv layer
 out_conv = conv.forward(image)
 out_convown, filter_conv, inter = fun.convolute(image, filter_conv)
+
+if np.sum(out_conv == out_convown) == np.prod(out_convown.shape):
+    print("Yeaaaah!")
 # feedforward maxpool layer
+
 out_max = pool.forward(out_conv)
 out_maxown, index_maxown = fun.max_pool(out_convown)
+
+if np.sum(out_max== out_maxown) == np.prod(out_maxown.shape):
+    print("Yeaaaah!")
+
 # feedforward softmax layer
-out_soft, weights = softmax.forward(out_max) #
+out_soft, weights, summe = softmax.forward(out_max) #
 np.random.seed(seed=666); weight_soft = (np.random.randn(dim_maxpool, 6) / dim_maxpool) * 10
 bias_soft = np.zeros(6)
-probabilities, inter_soft = fun.softmax(output_maxpool=out_maxown, 
+probabilities, inter_soft = fun.softmax(output_maxpool=out_max, 
                                         weight_matrix=weight_soft, 
                                         bias_vector=bias_soft)
 
-# I get the same as the probabilities in my softmax function,
-# but in the version from blog, I cant compute it like that, why?
-np.exp(np.dot(out_maxown.flatten(), weight_soft)) / np.sum(np.exp(np.dot(out_maxown.flatten(), weight_soft)), axis=0)
-np.exp(np.dot(out_max.flatten(), weight_soft)) / np.sum(np.exp(np.dot(out_max.flatten(), weight_soft)), axis=0)
-
-dim_maxpool
-softmax.weights
+if np.sum(out_soft== probabilities) == np.prod(out_soft.shape):
+    print("Yeaaaah!")
 
 ##################### backprop
 
 # backprop softmax
 gradient_L = np.zeros(10)
 gradient_L[label] = -1 / out_soft[label]
-gradient_soft = softmax.backprop(gradient_L, 0.01)[0]
-weight_soft, bias_soft, inter_softback, gradient_softown, inter_softback = fun.backprop_softmax(inter_soft=inter_soft, 
+gradient_soft, dL_dw = softmax.backprop(gradient_L, 0.01)
+weight_soft_back, bias_soft_back, inter_softback, gradient_softown, dL_dwown = fun.backprop_softmax(inter_soft=inter_soft, 
 #                     maxpool_shape=out_maxown.shape,
                      probabilities=probabilities,
                      label=label, 
                      learn_rate=0.01)
 
+
+if np.sum(gradient_soft == gradient_softown) == np.prod(gradient_soft.shape):
+    print("Yeaaaah!")
+
+
+
+# so gradients are the same, but they do not get copied to correct entries in 
+# feature map
+
 # backprop maxpool
 gradient_max = pool.backprop(gradient_soft)
-feature_gradients = fun.backprop_maxpool(out_convown, index_maxown, gradient_softown)
+#gradient_test = np.ones(shape=gradient_softown.shape)
+gradient_maxown = fun.backprop_maxpool(out_convown, gradient_softown)
 
-feature_gradients.shape
-# backprop conv
-## for first and third filter outputs are the same, for second different?
-gradient_conv = conv.backprop(gradient_max, learn_rate=0) 
+if np.sum(gradient_max == gradient_maxown) == np.prod(gradient_max.shape):
+    print("Yeaaaah!")
 
+gradient_conv, filter_update = conv.backprop(gradient_max, 0.01)
+gradient_convown, filter_updateown = fun.backprop_conv(image, filter_conv, index_maxown, 
+                                     feature_gradient=gradient_maxown, learn_rate=0.01)
 
-feature_gradients[0, 0, 3]
-np.prod(out_maxown.shape)
-len(gradient_softown)
-out_convown.shape
-feature_gradients.shape
+if np.sum(gradient_conv == gradient_convown) == np.prod(gradient_conv.shape):
+    print("Yeaaaah!")
 
-def backprop_conv(image, filter_conv, index_max, feature_gradient):           
-    #gradient = gradient.reshape(shape_outmax)
-    dpool_dfilter = np.zeros(shape=filter_conv.shape)
-    n_filters = dpool_dfilter.shape[0]
-    n_rows = dpool_dfilter.shape[1]
-    n_cols = dpool_dfilter.shape[2]
-    
-    for f in range(n_filters):
-        row_max, col_max = np.where(index_max[f] == True)
-        for i in range(n_rows):
-            for j in range(n_cols):
-                for m, n in zip(row_max, col_max):
-                    dpool_dfilter[f, i, j] += image[m+i, n+j] * feature_gradient[f, m, n]
-
-    return dpool_dfilter      
+if np.sum(filter_update == filter_updateown) == np.prod(filter_update.shape):
+    print("Yeaaaah!")
 
 
 
-backprop_conv(image, filter_conv, index_maxown, feature_gradients)
-
-index_maxown[0]

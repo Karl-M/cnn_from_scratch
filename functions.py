@@ -145,7 +145,7 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate):
     #dL_dwL[:, label] = dzL_dwL.dot(deltaL) # version from blog    
     dL_dwL = np.dot(inter_soft["output_maxpool"].flatten()[np.newaxis].T, deltaL[np.newaxis] ) # my version
     #print("dL_dwL: ", dL_dwL)
-    print("sum dL_dwL: ", np.sum(dL_dwL, axis=(0)))
+ #   print("sum dL_dwL: ", np.sum(dL_dwL, axis=(0)))
     #d_L_d_w = d_t_d_w[np.newaxis].T @ d_L_d_t[np.newaxis]
     
     # Im only updating one column of weight matrix, the other guy all?
@@ -163,12 +163,34 @@ def backprop_softmax(inter_soft, probabilities, label, learn_rate):
     return weight_matrix, bias_vector, intermediates, deltaL_cor, dL_dwL
 
 
-def backprop_maxpool(feature_map, index_max, deltaL_cor):
-    
-    feature_map_back = np.zeros(feature_map.shape)
-    feature_map_back[index_max] =  deltaL_cor
-    
-    return feature_map_back
+#def backprop_maxpool(feature_map, index_max, deltaL_cor):
+#    
+#    feature_map_back = np.zeros(feature_map.shape)
+#    feature_map_back[index_max] =  deltaL_cor
+#    
+#    return feature_map_back
+
+def backprop_maxpool(feature_map, gradient):
+
+    h = feature_map.shape[0]
+    w = feature_map.shape[1]
+    num_filters = feature_map.shape[2]
+    dMP = np.zeros(shape=feature_map.shape)
+  #  print(dMP.shape)
+    for f in range(num_filters):
+        for i in range(h // 2):
+            for j in range(w // 2):
+                region = feature_map[2*i:2*i+2, 2*j:2*j+2, f]
+             #   print(region)
+                for m in range(2):
+                    for n in range(2):
+                 #       print(f, i, j, m, n)
+                        if region[m, n] == np.amax(region):
+                            dMP[2*i:2*i+2, 2*j:2*j+2, f][m, n] = gradient[i, j, f]
+                            #print(dMP)
+    return dMP
+
+
 
 def backprop_conv(image, filter_conv, index_max, feature_gradient, learn_rate):           
     #gradient = gradient.reshape(shape_outmax)
@@ -178,15 +200,16 @@ def backprop_conv(image, filter_conv, index_max, feature_gradient, learn_rate):
     n_cols = dpool_dfilter.shape[2]
     
     for f in range(n_filters):
-        row_max, col_max = np.where(index_max[f] == True)
+        #row_max, col_max = np.where(index_max[:, :, f] == True)
+        row_max, col_max = np.where(feature_gradient[:, :, f] != 0)
         for i in range(n_rows):
             for j in range(n_cols):
                 for m, n in zip(row_max, col_max):
-                    dpool_dfilter[f, i, j] += image[m+i, n+j] * feature_gradient[f, m, n]
+                    dpool_dfilter[f, i, j ] += image[m+i, n+j] * feature_gradient[m, n, f]
                     
     filter_conv = filter_conv - learn_rate * dpool_dfilter
 
-    return filter_conv
+    return dpool_dfilter, filter_conv
 
 
 
@@ -214,7 +237,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
         bias_vector_soft= weights_soft["bias_vector"]
         
     for i in range(n_iter):
-        print("this is iteration: ", i)
+    #    print("this is iteration: ", i)
         image = training_data[i] / 255 - 0.5
         
         out_conv, filter_mat, intermediates_conv = convolute(
@@ -223,7 +246,7 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 )
         
         out_maxpool, index_max = max_pool(feature_map=out_conv)
-        print("maxpool filter 0: ", out_maxpool[0])
+      #  print("maxpool filter 0: ", out_maxpool[0])
         probabilities, intermediates_soft = softmax(
                 output_maxpool=out_maxpool, 
                 weight_matrix=weight_matrix_soft,
@@ -236,11 +259,11 @@ def training(n_iter, n_classes, n_filter, training_data, label,
                 learn_rate=learn_rate)
         
         feature_map_back = backprop_maxpool(feature_map=out_conv, 
-                                            index_max=index_max, 
-                                            deltaL_cor=deltaL_cor)
+                                            gradient=deltaL_cor)
 #        
-        filter_matrix_conv = backprop_conv(image, filter_mat, index_max, feature_map_back, learn_rate)
-#       
+        filter_matrix_conv, grads = backprop_conv(image, filter_mat, index_max, feature_map_back, learn_rate)
+       # print(filter_matrix_conv.shape)
+        #print(grads.shape)
 
         prediction = np.argmax(probabilities)
         acc = 1 if prediction == label[i] else 0
