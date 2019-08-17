@@ -23,11 +23,11 @@ import mnist
 #import test_cnn as test
 
 
-test_images = mnist.test_images()[:2000]
-test_labels = mnist.test_labels()[:2000]
+test_images = mnist.test_images()[:1000]
+test_labels = mnist.test_labels()[:1000]
 
 
-def debug_cnn(n_iter, version):
+def debug_cnn(n_iter, version, learn_rate):
 
 #    from importlib import reload 
     path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
@@ -45,7 +45,8 @@ def debug_cnn(n_iter, version):
     
     if version == "original":
         print("original version is being used")
-        path_blog_original = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
+#        path_blog_original = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
+        path_blog_original = "/home/konstantin/Documents/master_arbeit/original_blog/cnn-from-scratch"
         sys.path.append(path_blog_original)
         from conv import Conv3x3
         from maxpool import MaxPool2
@@ -57,7 +58,7 @@ def debug_cnn(n_iter, version):
         
         
     num_filters = 8
-    np.random.seed(seed=666); own_filter_conv = np.random.randn(num_filters, 3, 3) / 9
+    np.random.seed(seed=444); own_filter_conv = np.random.randn(num_filters, 3, 3) / 9
     own_filter_conv = np.round(own_filter_conv)
     
     dim_maxpool = 13 * 13 *8
@@ -82,11 +83,11 @@ def debug_cnn(n_iter, version):
         own_weight_soft, own_bias_soft, own_gradient_soft = fun.backprop_softmax(inter_soft=own_inter_soft,
                                                            probabilities=own_probs,
                                                            label = label,
-                                                           learn_rate=0.1) 
+                                                           learn_rate=learn_rate) 
         own_gradient_max = fun.backprop_maxpool(feature_map=own_feature_map, 
                                                 gradient=own_gradient_soft)
         own_filter_conv = fun.backprop_conv(image=image, filter_conv=own_filter_conv,
-                                        gradient=own_gradient_max, learn_rate=0.1)
+                                        gradient=own_gradient_max, learn_rate=learn_rate)
      
        
     # run model from blog with same data
@@ -95,13 +96,13 @@ def debug_cnn(n_iter, version):
         #print(out_conv)   
         blog_out_max = pool.forward(blog_out_conv)
         blog_out_soft = softmax.forward(blog_out_max) #
-        #    print(out_soft)
+        #print(blog_out_soft)
         gradient_L = np.zeros(10)
         gradient_L[label] = -1 / blog_out_soft[label]
         blog_gradient_soft = softmax.backprop(
-                gradient_L, 0.1)
+                gradient_L, learn_rate)
         blog_gradient_max = pool.backprop(blog_gradient_soft)
-        blog_gradient_conv, blog_filter_update = conv.backprop(blog_gradient_max, 0.1)
+        conv.backprop(blog_gradient_max, learn_rate)
         
         
         
@@ -128,7 +129,7 @@ def debug_cnn(n_iter, version):
             print(own_probs)
             print("Blog probabilities")
             print(blog_out_soft)
-            break
+         #   break
         ######################### compare backprop #################################
         ############################################################################
          
@@ -154,11 +155,11 @@ def debug_cnn(n_iter, version):
         else:
             print("NOOOO! updated gradients maxpool are not the same")
         ## conv
-        if np.sum(own_filter_conv == blog_filter_update) == np.prod(own_filter_conv.shape):
-            print("YEAAAHHH! updated filter convlayer are the same")
-        else:
-            print("NOOOOO! updated filter conv layer is not the same")
-            
+#        if np.sum(own_filter_conv == blog_filter_update) == np.prod(own_filter_conv.shape):
+#            print("YEAAAHHH! updated filter convlayer are the same")
+#        else:
+#            print("NOOOOO! updated filter conv layer is not the same")
+#            
             
         # So! After two runs the predicted probabilities are already different, why?
         
