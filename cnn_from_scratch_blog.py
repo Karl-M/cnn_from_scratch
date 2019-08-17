@@ -8,74 +8,60 @@
 # cnn from scratch in python 
 # https://victorzhou.com/blog/intro-to-cnns-part-1/
 
-# reasons to use cnn's for image classification
-
-# normal NN would be to big
-# the information apixel contains is only useful with respect to neighbouring pixels
-# position of an object is irrelevant
-
-# convolution helps us look for specific localized image features 
-import numpy as np
 import sys
-#from pathlib import Path
 import mnist
-import os
-path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-path2 = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
 sys.path.append(path)
-sys.path.append(path2)
-
+import numpy as np
+import test_cnn as test
 import functions as fun
 
-#cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
+test.debug_cnn(n_iter=101, version="changed", learn_rate=0.1)
 
-#if not cats_and_dogs_folder.is_file():
-#    raise AssertionError(f"Wrong folder: {cats_and_dogs_folder}")
-#sys.path.append(cats_and_dogs_folder)
-
-
-# why use softmax? To quantify how sure we are of our prediction
-# and use for example cross-entropy-loss
-
-# define forward pass through network
-
-test_images = mnist.test_images()[:2000]
-test_labels = mnist.test_labels()[:2000]
+test_images = mnist.test_images()[:2001]
+test_labels = mnist.test_labels()[:2001]
 
 
-conv, soft, feature_back = fun.training(1001, 10, 8, 
-                                        test_images, test_labels
-                                        , learn_rate=0.1, 
-                                        print_acc=True)
+def train(training_data, labels, n_iter, n_classes, n_filter, learn_rate, print_acc=True):
+    
+    input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
+    np.random.seed(seed=30); own_filter_conv = np.random.randn(n_filter, 3, 3) / 9
+    np.random.seed(seed=30); own_weight_soft = (np.random.randn(input_dim, n_classes) / input_dim)
+    own_bias_soft = np.random.randn(n_classes)
+    
+    num_correct = 0
+    
+    for i in range(n_iter):
+    
+            image = training_data[i] / 255 - 0.5
+            label = labels[i]
+            
+            own_feature_map, own_filter_conv = fun.convolute(image=image, filter_matrix= own_filter_conv)
+            own_maxpool_map = fun.maxpool(feature_map=own_feature_map)
+            own_probs, own_inter_soft = fun.softmax(own_maxpool_map, 
+                                            weight_matrix=own_weight_soft, 
+                                            bias_vector=own_bias_soft)
+            own_weight_soft, own_bias_soft, own_gradient_soft = fun.backprop_softmax(inter_soft=own_inter_soft,
+                                                               probabilities=own_probs,
+                                                               label = label,
+                                                               learn_rate=learn_rate) 
+            own_gradient_max = fun.backprop_maxpool(feature_map=own_feature_map, 
+                                                    gradient=own_gradient_soft)
+            own_filter_conv = fun.backprop_conv(image=image, filter_conv=own_filter_conv,
+                                            gradient=own_gradient_max, learn_rate=learn_rate)
+            
+            prediction = np.argmax(own_probs)
+            acc = 1 if prediction == label else 0
+            num_correct += acc
+            
+            if i % 100 == 0 and i != 0 and print_acc:
+                accuracy = num_correct / i
+                print(f"accuracy for the first {i} samples: {accuracy}")
+                print(f"{num_correct} predictions for {i} samples were correct")
+                
+    return None
 
-conv, soft = fun.training(1001, 10, 8, test_images, test_labels, 
-                          weights_conv=conv,
-                          weights_soft=soft,
-                          learn_rate=0.01, print_acc=True)
 
 
-good_conv, good_soft = conv, soft
-
-
-conv["bias_vector"]
-soft["bias_vector"]
-
-# das ganze mal für ein Bild testen?
-
-
-fun.convolute(test_images[0], filter_matrix_conv)
-
-it_regions = Conv3x3.iterate_regions(8, image=test_images[0])
-Conv3x3.forward(it_regions, test_images[0])
-
-
-
-5 * np.array([1, 3, 4])
-
-
-
-feature_back[0].shape
-
-
+train(test_images, test_labels, n_iter=1001, n_classes=10, n_filter=8, learn_rate=0.01)
 
