@@ -11,34 +11,36 @@ import sys
 #from pathlib import Path
 import mnist
 import os
-#path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
-#path2 = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
-path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
+path2 = "/home/konstantin/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+#path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+#path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
 
 sys.path.append(path)
 sys.path.append(path2)
 
+os.listdir(path2)
 
-
-test_images = mnist.test_images()[:2000]
-test_labels = mnist.test_labels()[:2000]
 
 import functions as fun
-import training as train
-import test_cnn as test
+#import training as train
+#import test_cnn as test
 
 from conv import Conv3x3
 from maxpool import MaxPool2
 from softmax import Softmax
 
+test_images = mnist.test_images()[:2000]
+test_labels = mnist.test_labels()[:2000]
+
+
 def debug_cnn(n_iter):
     num_filters = 8
-    np.random.seed(seed=666); own_filter_conv = np.random.randn(num_filters, 3, 3) * 3# / 9
+    np.random.seed(seed=666); own_filter_conv = np.random.randn(num_filters, 3, 3) / 9
     own_filter_conv = np.round(own_filter_conv)
     
     dim_maxpool = 13 * 13 *8
-    np.random.seed(seed=666); own_weight_soft = (np.random.randn(dim_maxpool, 10) / dim_maxpool) * 10
+    np.random.seed(seed=666); own_weight_soft = (np.random.randn(dim_maxpool, 10) / dim_maxpool) 
     own_bias_soft = np.zeros(10)
     
     conv = Conv3x3(8)  # 28x28x1 -> 26x26x8
@@ -71,11 +73,11 @@ def debug_cnn(n_iter):
         blog_out_conv = conv.forward(image)
         #print(out_conv)   
         blog_out_max = pool.forward(blog_out_conv)
-        blog_out_soft, blog_weights, blog_summe = softmax.forward(blog_out_max) #
+        blog_out_soft = softmax.forward(blog_out_max) #
         #    print(out_soft)
         gradient_L = np.zeros(10)
         gradient_L[label] = -1 / blog_out_soft[label]
-        blog_gradient_soft, blog_dL_dw = softmax.backprop(
+        blog_gradient_soft = softmax.backprop(
                 gradient_L, 0.1)
         blog_gradient_max = pool.backprop(blog_gradient_soft)
         blog_gradient_conv, blog_filter_update = conv.backprop(blog_gradient_max, 0.1)
@@ -86,30 +88,35 @@ def debug_cnn(n_iter):
         ###########################################################################
         print("This is iteration", i)
         if np.sum(own_feature_map == blog_out_conv) == np.prod(own_feature_map.shape):
-            print("Yeaaah! FeatureMaps are the same")
+            print("YEAAAH! FeatureMaps are the same")
         else:
-            print("featuremaps are not the same")
+            print("NOOOO! featuremaps are not the same")
             
        # conv.filters == filter_conv # 
         # after first iteration these are not the same anymore,
         # since they get updated
         if np.sum(own_maxpool_map == blog_out_max) == np.prod(blog_out_max.shape):
-            print("Yeaaah! maxpool is the same")
+            print("YEAHHH! maxpool is the same")
         else:
-            print("maxpool is not the same")
+            print("NOOOO! maxpool is not the same")
         if np.sum(own_probs == blog_out_soft) == np.prod(blog_out_soft.shape):
-            print("Yeaaah! predicted probabilities are the same")
+            print("YEAAAH! predicted probabilities are the same")
         else:
-            print("predicted probabilities are not the same")
-        
+            print("NOOOO! predicted probabilities are not the same")
+            print("Own probabilities")
+            print(own_probs)
+            print("Blog probabilities")
+            print(blog_out_soft)
+            break
         ######################### compare backprop #################################
         ############################################################################
          
         ######## softmax: gradients:    
         if np.sum(own_gradient_soft == blog_gradient_soft) == np.prod(blog_gradient_soft.shape):
-            print("Yeaaah! gradients softmax are the same")
+            print("YEAHHHH! gradients softmax are the same")
         else:
-            print("gradients softmax are not the same")
+            print("NOOOO! gradients softmax are not the same")
+            
         ## weight updates weight matrix softmax layer
 #        if np.sum(own_weight_soft == blog_weights_updated) == np.prod(own_weight_soft.shape):
 #            print("Yeaaah! updated weightmatrix softmax is the same")
@@ -122,14 +129,14 @@ def debug_cnn(n_iter):
 #            print("updated bias vector is not the same")
         #### maxpool
         if np.sum(own_gradient_max== blog_gradient_max) == np.prod(blog_gradient_max.shape):
-            print("Yeaaah! gradients maxpool layer are the same")
+            print("YEAHHHH! gradients maxpool layer are the same")
         else:
-            print("updated gradients maxpool are not the same")
+            print("NOOOO! updated gradients maxpool are not the same")
         ## conv
         if np.sum(own_filter_conv == blog_filter_update) == np.prod(own_filter_conv.shape):
-            print("Yeaaah! updated filter convlayer are the same")
+            print("YEAAAHHH! updated filter convlayer are the same")
         else:
-            print("updated filter conv layer is not the same")
+            print("NOOOOO! updated filter conv layer is not the same")
             
             
         # So! After two runs the predicted probabilities are already different, why?

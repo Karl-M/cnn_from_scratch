@@ -15,26 +15,26 @@
 # position of an object is irrelevant
 
 # convolution helps us look for specific localized image features 
-import numpy as np
+#import numpy as np
 import sys
-#from pathlib import Path
-import mnist
-import os
-#path = "/home/konstantin/Documents/master_arbeit/cnn_from_scratch"
+##from pathlib import Path
+#import mnist
+#import os
+path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
 #path2 = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
-path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
-path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
-
+##path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
+##path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+#
 sys.path.append(path)
-sys.path.append(path2)
-
-import functions as fun
-import training as train
+#sys.path.append(path2)
+#os.listdir(path)
+#import functions as fun
+#import training as train
 import test_cnn as test
-
-from conv import Conv3x3
-from maxpool import MaxPool2
-from softmax import Softmax
+#
+#from conv import Conv3x3
+#from maxpool import MaxPool2
+#from softmax import Softmax
 
 #cats_and_dogs_folder = Path("C:\\Users\D2GU53\Documents\master_arbeit\cats_and_dogs")
 
@@ -52,7 +52,7 @@ from softmax import Softmax
 # is exaclty the same in small_example_test_backconv.py
 # trying to compare every result on its own
 
-test.debug_cnn(2)
+test.debug_cnn(50)
 
 
 
