@@ -10,31 +10,52 @@ import numpy as np
 import sys
 #from pathlib import Path
 import mnist
-import os
-path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
-path2 = "/home/konstantin/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+#import os
+#path2 = "/home/konstantin/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
 #path = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r"
 #path2 = "C:/Users/D2GU53/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
 
-sys.path.append(path)
-sys.path.append(path2)
 
-os.listdir(path2)
+#os.listdir(path2)
 
 
-import functions as fun
 #import training as train
 #import test_cnn as test
 
-from conv import Conv3x3
-from maxpool import MaxPool2
-from softmax import Softmax
 
 test_images = mnist.test_images()[:2000]
 test_labels = mnist.test_labels()[:2000]
 
 
-def debug_cnn(n_iter):
+def debug_cnn(n_iter, version):
+
+#    from importlib import reload 
+    path = "/home/konstantin/Documents/master_arbeit/nn_in_r"
+    sys.path.append(path)
+    import functions as fun
+
+    
+    if version == "changed":
+        print("changed blog version is being used")
+        path_blog_changed = "/home/konstantin/Documents/master_arbeit/nn_in_r/cnn-from-scratch"
+        sys.path.append(path_blog_changed)
+        from conv import Conv3x3
+        from maxpool import MaxPool2
+        from softmax import Softmax
+    
+    if version == "original":
+        print("original version is being used")
+        path_blog_original = "/home/konstantin/Documents/master_arbeit/cnn-from-scratch"
+        sys.path.append(path_blog_original)
+        from conv import Conv3x3
+        from maxpool import MaxPool2
+        from softmax import Softmax
+#        Conv3x3 = reload(Conv3x3)
+#        MaxPool2 = reload(MaxPool2)
+#        Softmax = reload(Softmax)
+ 
+        
+        
     num_filters = 8
     np.random.seed(seed=666); own_filter_conv = np.random.randn(num_filters, 3, 3) / 9
     own_filter_conv = np.round(own_filter_conv)
