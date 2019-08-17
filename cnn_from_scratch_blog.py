@@ -18,15 +18,15 @@ import functions as fun
 
 test.debug_cnn(n_iter=101, version="changed", learn_rate=0.1)
 
-test_images = mnist.test_images()[:1000]
-test_labels = mnist.test_labels()[:1000]
+test_images = mnist.test_images()[:2001]
+test_labels = mnist.test_labels()[:2001]
 
 
 def train(training_data, labels, n_iter, n_classes, n_filter, learn_rate, print_acc=True):
     
     input_dim = int((((training_data[0].shape[0] - 3 + 1) / 2) ** 2) * n_filter)
-    own_filter_conv = np.random.randn(n_filter, 3, 3) / 9
-    own_weight_soft = (np.random.randn(input_dim, n_classes) / input_dim)
+    np.random.seed(seed=30); own_filter_conv = np.random.randn(n_filter, 3, 3) / 9
+    np.random.seed(seed=30); own_weight_soft = (np.random.randn(input_dim, n_classes) / input_dim)
     own_bias_soft = np.random.randn(n_classes)
     
     num_correct = 0
