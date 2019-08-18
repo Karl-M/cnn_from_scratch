@@ -87,7 +87,7 @@ def softmax(output_maxpool, weight_matrix, bias_vector):
                              "sum_exp": sum_exponentials,
                              "input_softmax": input_softmax,
                              "weight_matrix": weight_matrix,
-                             "output_maxpool_flattened": output_maxpool_flattened,
+                             "output_maxpool": output_maxpool,
                              "bias_vector": bias_vector,
                              "n_classes": n_classes
                              }
