@@ -87,7 +87,7 @@ def softmax(output_maxpool, weight_matrix, bias_vector):
                              "sum_exp": sum_exponentials,
                              "input_softmax": input_softmax,
                              "weight_matrix": weight_matrix,
-                             "output_maxpool": output_maxpool,
+                             "output_maxpool_flattened": output_maxpool_flattened,
                              "bias_vector": bias_vector,
                              "n_classes": n_classes
                              }
@@ -238,5 +238,7 @@ def backprop_conv(image, filter_conv, gradient, learn_rate):
 
     return filter_conv#, dpool_dfilter
 
+    return weights_conv, weights_soft, feature_map_back
+    
 
 
